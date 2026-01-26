@@ -1052,32 +1052,157 @@ export class MongoStorage implements IStorage {
 
   async getInvoices(): Promise<Invoice[]> {
     const invoices = await InvoiceModel.find().sort({ date: -1 });
-    return invoices.map(inv => {
+    const enrichedInvoices: Invoice[] = [];
+    
+    for (const inv of invoices) {
       const obj = inv.toObject();
-      return {
+      let enrichedInvoice: any = {
         ...obj,
         id: inv._id.toString(),
         business: inv.business as "Auto Gamma" | "AGNX",
         discount: obj.discount ?? 0,
         laborCharge: obj.laborCharge ?? 0,
         gstPercentage: obj.gstPercentage ?? 18,
-      } as Invoice;
-    });
+      };
+      
+      // Enrich with job card data if vehicle details are missing
+      if (inv.jobCardId && (!inv.vehicleMake || !inv.licensePlate)) {
+        try {
+          const jobCard = await JobCardModel.findById(inv.jobCardId);
+          if (jobCard) {
+            enrichedInvoice.vehicleMake = enrichedInvoice.vehicleMake || jobCard.make;
+            enrichedInvoice.vehicleModel = enrichedInvoice.vehicleModel || jobCard.model;
+            enrichedInvoice.vehicleYear = enrichedInvoice.vehicleYear || jobCard.year;
+            enrichedInvoice.licensePlate = enrichedInvoice.licensePlate || jobCard.licensePlate;
+            enrichedInvoice.vehicleType = enrichedInvoice.vehicleType || jobCard.vehicleType;
+            
+            // Enrich items with sub-details from job card
+            if (enrichedInvoice.items && enrichedInvoice.items.length > 0) {
+              enrichedInvoice.items = enrichedInvoice.items.map((item: any) => {
+                // PPF items - match by name and enrich with warranty, rollUsed
+                if (item.type === "PPF" && jobCard.ppfs) {
+                  const matchingPpf = (jobCard.ppfs as any[]).find(p => p.name === item.name);
+                  if (matchingPpf) {
+                    return {
+                      ...item,
+                      warranty: item.warranty || matchingPpf.warranty || matchingPpf.warrantyName,
+                      rollUsed: item.rollUsed || matchingPpf.rollUsed,
+                      vehicleType: item.vehicleType || jobCard.vehicleType,
+                      technician: item.technician || matchingPpf.technician,
+                    };
+                  }
+                }
+                // Service items
+                if (item.type === "Service" && jobCard.services) {
+                  const matchingService = (jobCard.services as any[]).find(s => s.name === item.name);
+                  if (matchingService) {
+                    return {
+                      ...item,
+                      vehicleType: item.vehicleType || jobCard.vehicleType,
+                      technician: item.technician || matchingService.technician,
+                    };
+                  }
+                }
+                // Accessory items
+                if (item.type === "Accessory" && jobCard.accessories) {
+                  const matchingAccessory = (jobCard.accessories as any[]).find(a => a.name === item.name);
+                  if (matchingAccessory) {
+                    return {
+                      ...item,
+                      category: item.category || matchingAccessory.category,
+                      quantity: item.quantity || matchingAccessory.quantity,
+                    };
+                  }
+                }
+                return item;
+              });
+            }
+          }
+        } catch (e) {
+          console.error("Error enriching invoice with job card data:", e);
+        }
+      }
+      
+      enrichedInvoices.push(enrichedInvoice as Invoice);
+    }
+    
+    return enrichedInvoices;
   }
 
   async getInvoicesByPhone(phone: string): Promise<Invoice[]> {
     const invoices = await InvoiceModel.find({ phoneNumber: phone }).sort({ date: -1 });
-    return invoices.map(inv => {
+    const enrichedInvoices: Invoice[] = [];
+    
+    for (const inv of invoices) {
       const obj = inv.toObject();
-      return {
+      let enrichedInvoice: any = {
         ...obj,
         id: inv._id.toString(),
         business: inv.business as "Auto Gamma" | "AGNX",
         discount: obj.discount ?? 0,
         laborCharge: obj.laborCharge ?? 0,
         gstPercentage: obj.gstPercentage ?? 18,
-      } as Invoice;
-    });
+      };
+      
+      // Enrich with job card data if vehicle details are missing
+      if (inv.jobCardId && (!inv.vehicleMake || !inv.licensePlate)) {
+        try {
+          const jobCard = await JobCardModel.findById(inv.jobCardId);
+          if (jobCard) {
+            enrichedInvoice.vehicleMake = enrichedInvoice.vehicleMake || jobCard.make;
+            enrichedInvoice.vehicleModel = enrichedInvoice.vehicleModel || jobCard.model;
+            enrichedInvoice.vehicleYear = enrichedInvoice.vehicleYear || jobCard.year;
+            enrichedInvoice.licensePlate = enrichedInvoice.licensePlate || jobCard.licensePlate;
+            enrichedInvoice.vehicleType = enrichedInvoice.vehicleType || jobCard.vehicleType;
+            
+            // Enrich items with sub-details
+            if (enrichedInvoice.items && enrichedInvoice.items.length > 0) {
+              enrichedInvoice.items = enrichedInvoice.items.map((item: any) => {
+                if (item.type === "PPF" && jobCard.ppfs) {
+                  const matchingPpf = (jobCard.ppfs as any[]).find(p => p.name === item.name);
+                  if (matchingPpf) {
+                    return {
+                      ...item,
+                      warranty: item.warranty || matchingPpf.warranty || matchingPpf.warrantyName,
+                      rollUsed: item.rollUsed || matchingPpf.rollUsed,
+                      vehicleType: item.vehicleType || jobCard.vehicleType,
+                      technician: item.technician || matchingPpf.technician,
+                    };
+                  }
+                }
+                if (item.type === "Service" && jobCard.services) {
+                  const matchingService = (jobCard.services as any[]).find(s => s.name === item.name);
+                  if (matchingService) {
+                    return {
+                      ...item,
+                      vehicleType: item.vehicleType || jobCard.vehicleType,
+                      technician: item.technician || matchingService.technician,
+                    };
+                  }
+                }
+                if (item.type === "Accessory" && jobCard.accessories) {
+                  const matchingAccessory = (jobCard.accessories as any[]).find(a => a.name === item.name);
+                  if (matchingAccessory) {
+                    return {
+                      ...item,
+                      category: item.category || matchingAccessory.category,
+                      quantity: item.quantity || matchingAccessory.quantity,
+                    };
+                  }
+                }
+                return item;
+              });
+            }
+          }
+        } catch (e) {
+          console.error("Error enriching invoice with job card data:", e);
+        }
+      }
+      
+      enrichedInvoices.push(enrichedInvoice as Invoice);
+    }
+    
+    return enrichedInvoices;
   }
 
   async getInvoice(id: string): Promise<Invoice | undefined> {

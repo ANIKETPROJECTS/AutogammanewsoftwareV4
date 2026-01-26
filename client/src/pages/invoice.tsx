@@ -87,9 +87,8 @@ function PrintableInvoice({ invoice }: { invoice: Invoice }) {
   const gstPercentage = invoice.gstPercentage || 18;
   const halfGst = gstPercentage / 2;
   const discount = invoice.discount || 0;
-  const laborItems = invoice.items.filter(i => i.type === "Labor");
+  const laborCharge = invoice.laborCharge || 0;
   const nonLaborItems = invoice.items.filter(i => i.type !== "Labor");
-  const laborTotal = laborItems.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
   
   return (
     <div className="print-invoice bg-white p-8" id="printable-invoice">
@@ -189,10 +188,10 @@ function PrintableInvoice({ invoice }: { invoice: Invoice }) {
             </div>
           )}
 
-          {laborTotal > 0 && (
+          {laborCharge > 0 && (
             <div className="flex justify-between text-slate-600 pb-2 border-b border-slate-200">
               <span className="font-medium">Labor Charges</span>
-              <span className="font-bold">₹{laborTotal.toLocaleString()}</span>
+              <span className="font-bold">₹{laborCharge.toLocaleString()}</span>
             </div>
           )}
 

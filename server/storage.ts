@@ -885,6 +885,129 @@ export class MongoStorage implements IStorage {
 
     const j = await JobCardModel.findByIdAndUpdate(id, jobCard, { new: true });
     if (!j) return undefined;
+
+    // Update associated invoices with new labor charge, discount, and GST
+    const year = new Date().getFullYear();
+    const businesses = ["Auto Gamma", "AGNX"] as const;
+    
+    for (const biz of businesses) {
+      const bizItems: any[] = [];
+      let bizLaborCharge = 0;
+      
+      // Services
+      j.services?.forEach(s => {
+        if ((s as any).business === biz) {
+          bizItems.push({ 
+            name: s.name, 
+            price: s.price, 
+            type: "Service",
+            technician: (s as any).technician,
+            vehicleType: (j as any).vehicleType
+          });
+        }
+      });
+      
+      // PPFs with detailed info
+      j.ppfs?.forEach(p => {
+        if ((p as any).business === biz) {
+          bizItems.push({ 
+            name: p.name, 
+            price: p.price, 
+            type: "PPF",
+            warranty: (p as any).warranty || (p as any).warrantyName,
+            vehicleType: (j as any).vehicleType,
+            rollUsed: (p as any).rollUsed,
+            technician: (p as any).technician,
+            category: "PPF Application"
+          });
+        }
+      });
+      
+      // Accessories with category
+      j.accessories?.forEach(a => {
+        if ((a as any).business === biz) {
+          bizItems.push({ 
+            name: a.name, 
+            price: a.price, 
+            quantity: (a as any).quantity || 1, 
+            type: "Accessory",
+            category: (a as any).category
+          });
+        }
+      });
+      
+      // Labor - tracked separately
+      if ((j as any).laborBusiness === biz && j.laborCharge > 0) {
+        bizLaborCharge = j.laborCharge;
+        bizItems.push({ name: "Labor Charge", price: j.laborCharge, type: "Labor" });
+      }
+
+      // Find existing invoice for this business and job card
+      const existingInvoice = await InvoiceModel.findOne({ jobCardId: id, business: biz });
+      
+      if (bizItems.length > 0) {
+        const itemsSubtotal = bizItems.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
+        const discountAmount = j.discount || 0;
+        const subtotalAfterDiscount = itemsSubtotal - discountAmount;
+        const gstAmount = Math.round(subtotalAfterDiscount * (j.gst / 100));
+        const totalAmount = Math.round(subtotalAfterDiscount + gstAmount);
+        
+        if (existingInvoice) {
+          // Update existing invoice
+          await InvoiceModel.findByIdAndUpdate(existingInvoice._id, {
+            customerName: j.customerName,
+            phoneNumber: j.phoneNumber,
+            emailAddress: j.emailAddress,
+            vehicleInfo: `${j.year} ${j.make} ${j.model}`,
+            vehicleMake: j.make,
+            vehicleModel: j.model,
+            vehicleYear: j.year,
+            licensePlate: j.licensePlate,
+            vehicleType: (j as any).vehicleType,
+            items: bizItems,
+            subtotal: itemsSubtotal,
+            discount: discountAmount,
+            laborCharge: bizLaborCharge,
+            gstPercentage: j.gst,
+            gstAmount,
+            totalAmount
+          });
+        } else {
+          // Create new invoice if it doesn't exist
+          const invCount = await InvoiceModel.countDocuments({ business: biz });
+          const bizPrefix = biz === "Auto Gamma" ? "AG" : "AGNX";
+          const invoiceNo = `${bizPrefix}-${year}-${(invCount + 1).toString().padStart(4, "0")}`;
+          
+          const inv = new InvoiceModel({
+            invoiceNo,
+            jobCardId: id,
+            business: biz,
+            customerName: j.customerName,
+            phoneNumber: j.phoneNumber,
+            emailAddress: j.emailAddress,
+            vehicleInfo: `${j.year} ${j.make} ${j.model}`,
+            vehicleMake: j.make,
+            vehicleModel: j.model,
+            vehicleYear: j.year,
+            licensePlate: j.licensePlate,
+            vehicleType: (j as any).vehicleType,
+            items: bizItems,
+            subtotal: itemsSubtotal,
+            discount: discountAmount,
+            laborCharge: bizLaborCharge,
+            gstPercentage: j.gst,
+            gstAmount,
+            totalAmount,
+            date: new Date().toISOString()
+          });
+          await inv.save();
+        }
+      } else if (existingInvoice) {
+        // Remove invoice if no items for this business anymore
+        await InvoiceModel.findByIdAndDelete(existingInvoice._id);
+      }
+    }
+
     return {
       ...j.toObject(),
       id: j._id.toString(),

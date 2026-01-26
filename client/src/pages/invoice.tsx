@@ -32,17 +32,17 @@ const BUSINESS_INFO = {
   "Auto Gamma": {
     name: "Auto Gamma",
     address: "Shop no. 09 & 10, Shreeji Parasio, Prasad Hotel Road, near Panvel Highway, beside Tulsi Aangan Soc, Katrap, Badlapur, Maharashtra 421503",
-    phone: "077380 16768",
+    phone: "+91 77380 16768",
     email: "support@autogamma.in",
-    website: "https://autogamma.in/",
+    website: "www.autogamma.in",
     logo: autoGammaLogo,
   },
   "AGNX": {
     name: "AGNX",
     address: "Shop no. 09 & 10, Shreeji Parasio, Prasad Hotel Road, near Panvel Highway, beside Tulsi Aangan Soc, Katrap, Badlapur, Maharashtra 421503",
-    phone: "077380 16768",
+    phone: "+91 77380 16768",
     email: "support@autogamma.in",
-    website: "https://autogamma.in/",
+    website: "www.autogamma.in",
     logo: autoGammaLogo,
   }
 };
@@ -55,20 +55,41 @@ function InvoiceItemDetails({ item }: { item: InvoiceItem }) {
       <div className="font-semibold text-slate-900">{item.name}</div>
       {hasSubDetails && (
         <div className="text-xs text-slate-500 space-y-0.5 pl-2 border-l-2 border-slate-200">
-          {item.category && (
-            <div><span className="font-medium">Category:</span> {item.category}</div>
+          {item.type === "PPF" && (
+            <>
+              {item.warranty && (
+                <div><span className="font-medium text-slate-700">Warranty:</span> {item.warranty}</div>
+              )}
+              {item.rollUsed && item.rollUsed > 0 && (
+                <div><span className="font-medium text-slate-700">Total Sq.ft Roll Used:</span> {item.rollUsed} sq.ft</div>
+              )}
+              {item.vehicleType && (
+                <div><span className="font-medium text-slate-700">Vehicle Type:</span> {item.vehicleType}</div>
+              )}
+              {item.technician && (
+                <div><span className="font-medium text-slate-700">Technician:</span> {item.technician}</div>
+              )}
+            </>
           )}
-          {item.warranty && (
-            <div><span className="font-medium">Warranty:</span> {item.warranty}</div>
+          {item.type === "Service" && (
+            <>
+              {item.vehicleType && (
+                <div><span className="font-medium text-slate-700">Vehicle Type:</span> {item.vehicleType}</div>
+              )}
+              {item.technician && (
+                <div><span className="font-medium text-slate-700">Technician:</span> {item.technician}</div>
+              )}
+            </>
           )}
-          {item.vehicleType && (
-            <div><span className="font-medium">Vehicle Type:</span> {item.vehicleType}</div>
-          )}
-          {item.rollUsed && item.rollUsed > 0 && (
-            <div><span className="font-medium">Roll Used:</span> {item.rollUsed} sq.ft</div>
-          )}
-          {item.technician && (
-            <div><span className="font-medium">Technician:</span> {item.technician}</div>
+          {item.type === "Accessory" && (
+            <>
+              {item.category && (
+                <div><span className="font-medium text-slate-700">Category:</span> {item.category}</div>
+              )}
+              {item.quantity && item.quantity > 1 && (
+                <div><span className="font-medium text-slate-700">Quantity:</span> {item.quantity}</div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -93,10 +114,10 @@ function PrintableInvoice({ invoice }: { invoice: Invoice }) {
         <div className="space-y-3">
           <img src={businessInfo.logo} alt={businessInfo.name} className="h-16 object-contain" />
           <div className="text-sm text-slate-600 space-y-0.5 max-w-xs">
-            <p>{businessInfo.address}</p>
-            <p>{businessInfo.phone}</p>
-            <p>{businessInfo.email}</p>
-            <p>www.autogamma.in</p>
+            <p><span className="font-semibold text-slate-700">ADDRESS:</span> {businessInfo.address}</p>
+            <p><span className="font-semibold text-slate-700">CONTACT:</span> {businessInfo.phone}</p>
+            <p><span className="font-semibold text-slate-700">MAIL:</span> {businessInfo.email}</p>
+            <p><span className="font-semibold text-slate-700">WEBSITE:</span> {businessInfo.website}</p>
           </div>
         </div>
         
@@ -108,13 +129,6 @@ function PrintableInvoice({ invoice }: { invoice: Invoice }) {
         </div>
       </div>
 
-      {/* Invoice Title */}
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">INVOICE</h1>
-        <Badge variant="destructive" className="mt-2 bg-red-600 text-white text-sm px-4 py-1">
-          {invoice.business}
-        </Badge>
-      </div>
 
       {/* Bill To and Vehicle Details */}
       <div className="grid grid-cols-2 gap-8 mb-6 bg-slate-50 p-4 rounded-lg">
@@ -127,10 +141,10 @@ function PrintableInvoice({ invoice }: { invoice: Invoice }) {
         <div className="text-right space-y-2">
           <p className="text-xs font-bold text-red-600 uppercase tracking-widest">Vehicle Details</p>
           <div className="text-sm space-y-1">
-            <p className="font-bold text-slate-900">{invoice.vehicleMake || "-"} {invoice.vehicleModel || ""}</p>
-            <p className="text-slate-600">Plate: {invoice.licensePlate || "-"}</p>
-            {invoice.vehicleYear && <p className="text-slate-600">Year: {invoice.vehicleYear}</p>}
-            {invoice.vehicleType && <p className="text-slate-600">Type: {invoice.vehicleType}</p>}
+            <p className="text-slate-600"><span className="font-semibold text-slate-700">Make / Model:</span> {invoice.vehicleMake || "-"} {invoice.vehicleModel || ""}</p>
+            <p className="text-slate-600"><span className="font-semibold text-slate-700">Year:</span> {invoice.vehicleYear || "-"}</p>
+            <p className="text-slate-600"><span className="font-semibold text-slate-700">License Plate:</span> {invoice.licensePlate || "-"}</p>
+            {invoice.vehicleType && <p className="text-slate-600"><span className="font-semibold text-slate-700">Type:</span> {invoice.vehicleType}</p>}
           </div>
         </div>
       </div>

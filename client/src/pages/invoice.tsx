@@ -48,7 +48,8 @@ const BUSINESS_INFO = {
 };
 
 function InvoiceItemDetails({ item }: { item: InvoiceItem }) {
-  const hasSubDetails = item.warranty || item.category || item.rollUsed || item.vehicleType || item.technician;
+  const hasSubDetails = (item.type === "PPF" && (item.warranty || item.rollUsed)) || 
+                        (item.type === "Accessory" && (item.category || (item.quantity && item.quantity > 1)));
   
   return (
     <div className="space-y-1">
@@ -62,22 +63,6 @@ function InvoiceItemDetails({ item }: { item: InvoiceItem }) {
               )}
               {item.rollUsed && item.rollUsed > 0 && (
                 <div><span className="font-medium text-slate-700">Total Sq.ft Roll Used:</span> {item.rollUsed} sq.ft</div>
-              )}
-              {item.vehicleType && (
-                <div><span className="font-medium text-slate-700">Vehicle Type:</span> {item.vehicleType}</div>
-              )}
-              {item.technician && (
-                <div><span className="font-medium text-slate-700">Technician:</span> {item.technician}</div>
-              )}
-            </>
-          )}
-          {item.type === "Service" && (
-            <>
-              {item.vehicleType && (
-                <div><span className="font-medium text-slate-700">Vehicle Type:</span> {item.vehicleType}</div>
-              )}
-              {item.technician && (
-                <div><span className="font-medium text-slate-700">Technician:</span> {item.technician}</div>
               )}
             </>
           )}
@@ -172,8 +157,8 @@ function PrintableInvoice({ invoice }: { invoice: Invoice }) {
                 </TableCell>
                 <TableCell>
                   <Badge 
-                    variant={item.type === "PPF" ? "destructive" : item.type === "Service" ? "default" : "secondary"} 
-                    className={`text-[10px] uppercase ${item.type === "PPF" ? "bg-red-600" : ""}`}
+                    variant="secondary" 
+                    className="text-[10px] uppercase bg-slate-200 text-slate-700"
                   >
                     {item.type}
                   </Badge>

@@ -239,11 +239,26 @@ export default function AddJobPage() {
   const [ppfExpanded, setPpfExpanded] = useState(false);
   const [accessoriesExpanded, setAccessoriesExpanded] = useState(false);
   const [laborBusiness, setLaborBusiness] = useState<string>("Auto Gamma");
-  const [paymentMethod, setPaymentMethod] = useState("Cash");
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
-  const [markAsPaid, setMarkAsPaid] = useState(false);
   const [businessAssignments, setBusinessAssignments] = useState<Record<string, string>>({});
   const [pendingFormData, setPendingFormData] = useState<any>(null);
+  const [markAsPaid, setMarkAsPaid] = useState(false);
+  const [payments, setPayments] = useState<{ amount: number; method: string; date: string }[]>([
+    { amount: 0, method: "Cash", date: new Date().toISOString().split("T")[0] }
+  ]);
+
+  const handleAddPayment = () => {
+    setPayments([...payments, { amount: 0, method: "Cash", date: new Date().toISOString().split("T")[0] }]);
+  };
+
+  const handleRemovePayment = (index: number) => {
+    setPayments(payments.filter((_, i) => i !== index));
+  };
+
+  const handlePaymentChange = (index: number, field: string, value: any) => {
+    const newPayments = [...payments];
+    newPayments[index] = { ...newPayments[index], [field]: value };
+    setPayments(newPayments);
+  };
 
   const handleAddService = () => {
     const s = services.find(item => item.id === selectedService);
@@ -461,8 +476,7 @@ export default function AddJobPage() {
       discount: Number(pendingFormData.discount),
       gst: Number(pendingFormData.gst),
       isPaid: markAsPaid,
-      paymentMethod: markAsPaid ? paymentMethod : undefined,
-      paymentDate: markAsPaid ? paymentDate : undefined,
+      payments: markAsPaid ? payments.map((p: any) => ({ ...p, amount: Number(p.amount) })) : [],
     };
     createJobMutation.mutate(formattedData);
     setShowBusinessDialog(false);
@@ -1134,7 +1148,7 @@ export default function AddJobPage() {
                   </h3>
                   <div className="bg-slate-50 rounded-lg border overflow-hidden">
                     <div className="p-4 space-y-3">
-                      {[...form.watch("services"), ...form.watch("ppfs"), ...form.watch("accessories")].map((item, idx) => (
+                      {[...form.watch("services"), ...form.watch("ppfs"), ...form.watch("accessories")].map((item: any, idx: number) => (
                         <div key={idx} className="flex justify-between items-center text-sm">
                           <span className="text-slate-600">{item.name} {item.quantity ? `(x${item.quantity})` : ""}</span>
                           <span className="font-semibold">₹{(item.price || 0).toLocaleString()}</span>
@@ -1221,7 +1235,7 @@ export default function AddJobPage() {
             </DialogHeader>
             
             <div className="space-y-4 py-4">
-              {pendingFormData?.services.map((item, i) => (
+              {pendingFormData?.services.map((item: any, i: number) => (
                 <div key={`service-${i}`} className="flex items-center justify-between p-4 border rounded-lg bg-slate-50/50">
                   <div>
                     <p className="font-semibold text-slate-900">{item.name}</p>
@@ -1245,7 +1259,7 @@ export default function AddJobPage() {
                 </div>
               ))}
 
-              {pendingFormData?.ppfs.map((item, i) => (
+              {pendingFormData?.ppfs.map((item: any, i: number) => (
                 <div key={`ppf-${i}`} className="flex items-center justify-between p-4 border rounded-lg bg-slate-50/50">
                   <div>
                     <p className="font-semibold text-slate-900">{item.name}</p>
@@ -1269,7 +1283,7 @@ export default function AddJobPage() {
                 </div>
               ))}
 
-              {pendingFormData?.accessories.map((item, i) => (
+              {pendingFormData?.accessories.map((item: any, i: number) => (
                 <div key={`accessory-${i}`} className="flex items-center justify-between p-4 border rounded-lg bg-slate-50/50">
                   <div>
                     <p className="font-semibold text-slate-900">{item.name}</p>
@@ -1334,32 +1348,76 @@ export default function AddJobPage() {
                 </div>
 
                 {markAsPaid && (
-                  <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Payment Date</label>
-                      <Input 
-                        type="date" 
-                        value={paymentDate}
-                        onChange={(e) => setPaymentDate(e.target.value)}
-                        className="h-10"
-                      />
+                  <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold text-slate-900">Payment Details</h4>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleAddPayment}
+                        className="h-8"
+                      >
+                        Add Payment Method
+                      </Button>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase">Payment Method</label>
-                      <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                        <SelectTrigger className="h-10">
-                          <SelectValue placeholder="Select Method" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Cash">Cash</SelectItem>
-                          <SelectItem value="UPI / GPay">UPI / GPay</SelectItem>
-                          <SelectItem value="Card">Card</SelectItem>
-                          <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    
+                    {payments.map((payment, index) => (
+                      <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-slate-50 p-3 rounded-md relative group">
+                        <div>
+                          <label className="text-xs font-semibold text-slate-500 mb-1 block uppercase">Amount</label>
+                          <Input
+                            type="number"
+                            value={payment.amount}
+                            onChange={(e) => handlePaymentChange(index, "amount", e.target.value)}
+                            placeholder="0"
+                            className="h-9"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-500 mb-1 block uppercase">Method</label>
+                          <Select 
+                            value={payment.method} 
+                            onValueChange={(val) => handlePaymentChange(index, "method", val)}
+                          >
+                            <SelectTrigger className="h-9">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Cash">Cash</SelectItem>
+                              <SelectItem value="UPI / GPay">UPI / GPay</SelectItem>
+                              <SelectItem value="Card">Card</SelectItem>
+                              <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-slate-500 mb-1 block uppercase">Date</label>
+                          <Input
+                            type="date"
+                            value={payment.date}
+                            onChange={(e) => handlePaymentChange(index, "date", e.target.value)}
+                            className="h-9"
+                          />
+                        </div>
+                        <div className="flex justify-end">
+                          {payments.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleRemovePayment(index)}
+                              className="h-9 w-9 text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
+
               </div>
             </div>
 

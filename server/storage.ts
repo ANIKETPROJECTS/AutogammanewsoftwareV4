@@ -196,8 +196,11 @@ const invoiceMongoSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true },
   date: { type: String, required: true },
   isPaid: { type: Boolean, default: false },
-  paymentMethod: { type: String },
-  paymentDate: { type: String }
+  payments: [{
+    amount: Number,
+    method: String,
+    date: String
+  }]
 });
 
 export const InvoiceModel = mongoose.model("Invoice", invoiceMongoSchema);

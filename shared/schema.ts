@@ -225,6 +225,14 @@ export const invoiceItemSchema = z.object({
 
 export type InvoiceItem = z.infer<typeof invoiceItemSchema>;
 
+export const paymentEntrySchema = z.object({
+  amount: z.coerce.number(),
+  method: z.string(),
+  date: z.string(),
+});
+
+export type PaymentEntry = z.infer<typeof paymentEntrySchema>;
+
 export const invoiceSchema = z.object({
   id: z.string().optional(),
   invoiceNo: z.string(),
@@ -248,8 +256,7 @@ export const invoiceSchema = z.object({
   totalAmount: z.number(),
   date: z.string(),
   isPaid: z.boolean().default(false),
-  paymentMethod: z.string().optional(),
-  paymentDate: z.string().optional(),
+  payments: z.array(paymentEntrySchema).default([]),
 });
 
 export type Invoice = z.infer<typeof invoiceSchema>;

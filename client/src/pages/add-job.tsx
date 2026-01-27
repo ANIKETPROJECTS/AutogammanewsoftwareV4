@@ -491,6 +491,8 @@ export default function AddJobPage() {
         price: Number(a.price),
         business: businessAssignments[`accessory-${i}`] || "Auto Gamma"
       })),
+      isPaid: markAsPaid,
+      payments: markAsPaid ? payments.map((p: any) => ({ ...p, amount: Number(p.amount) })) : [],
       laborCharge: Number(pendingFormData.laborCharge),
       laborBusiness: laborBusiness,
       discount: Number(pendingFormData.discount),

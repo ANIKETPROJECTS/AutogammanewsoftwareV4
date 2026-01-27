@@ -277,6 +277,18 @@ export default function JobDetailsPage() {
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center text-sm font-medium text-slate-500">
+                    <span>Labor Charge</span>
+                    <span className="text-base font-bold text-slate-900">₹{job.laborCharge.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm font-medium text-slate-500">
+                    <span>Discount</span>
+                    <span className="text-base font-bold text-green-600">-₹{job.discount.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm font-medium text-slate-500">
+                    <span>GST (%)</span>
+                    <span className="text-base font-bold text-slate-900">{job.gst}%</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm font-medium text-slate-500 pt-2 border-t border-slate-100">
                     <span>Estimated Cost</span>
                     <span className="text-lg font-black text-slate-900">₹{job.estimatedCost.toLocaleString()}</span>
                   </div>

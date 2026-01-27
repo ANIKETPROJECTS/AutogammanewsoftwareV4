@@ -256,7 +256,23 @@ export default function AddJobPage() {
 
   const handlePaymentChange = (index: number, field: string, value: any) => {
     const newPayments = [...payments];
-    newPayments[index] = { ...newPayments[index], [field]: value };
+    let finalValue = value;
+    
+    if (field === "amount") {
+      const subtotal = [...form.getValues("services"), ...form.getValues("ppfs"), ...form.getValues("accessories")].reduce((acc, curr) => acc + (curr.price || 0), 0) + Number(form.getValues("laborCharge") || 0);
+      const afterDiscount = subtotal - Number(form.getValues("discount") || 0);
+      const tax = afterDiscount * (Number(form.getValues("gst") || 18) / 100);
+      const totalEstimatedCost = Math.round(afterDiscount + tax);
+      
+      const otherPaymentsTotal = payments.reduce((acc, p, i) => i === index ? acc : acc + Number(p.amount || 0), 0);
+      const maxAllowed = totalEstimatedCost - otherPaymentsTotal;
+      
+      if (Number(value) > maxAllowed) {
+        finalValue = maxAllowed;
+      }
+    }
+    
+    newPayments[index] = { ...newPayments[index], [field]: finalValue };
     setPayments(newPayments);
   };
 
@@ -1347,20 +1363,37 @@ export default function AddJobPage() {
                   </div>
                 </div>
 
-                {markAsPaid && (
-                  <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-semibold text-slate-900">Payment Details</h4>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={handleAddPayment}
-                        className="h-8"
-                      >
-                        Add Payment Method
-                      </Button>
-                    </div>
+            {markAsPaid && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="flex items-center justify-between bg-red-50 p-3 rounded-lg border border-red-100">
+                  <div className="flex items-center gap-2 text-red-700">
+                    <FileText className="h-4 w-4" />
+                    <span className="text-sm font-bold uppercase tracking-wider">Total Invoice Amount:</span>
+                    <span className="text-lg font-black tracking-tight">₹{Math.round(
+                      ([...form.watch("services"), ...form.watch("ppfs"), ...form.watch("accessories")].reduce((acc, curr) => acc + (curr.price || 0), 0) + 
+                      Number(form.watch("laborCharge") || 0) - 
+                      Number(form.watch("discount") || 0)) * 
+                      (1 + form.watch("gst") / 100)
+                    ).toLocaleString()}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase block leading-none mb-1">Total Paid</span>
+                    <span className="text-sm font-bold text-slate-700">₹{payments.reduce((acc, p) => acc + Number(p.amount || 0), 0).toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-slate-900">Payment Details</h4>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleAddPayment}
+                    className="h-8"
+                  >
+                    Add Payment Method
+                  </Button>
+                </div>
                     
                     {payments.map((payment, index) => (
                       <div key={index} className="flex flex-row items-end gap-3 bg-slate-50 p-3 rounded-md relative group">

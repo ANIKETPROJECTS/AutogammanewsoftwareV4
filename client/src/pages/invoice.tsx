@@ -270,6 +270,21 @@ function PrintableInvoice({ invoice }: { invoice: Invoice }) {
   );
 }
 
+// Helper function to determine payment status
+function getPaymentStatus(invoice: Invoice): { status: 'Paid' | 'Partial Paid' | 'Unpaid'; paidAmount: number } {
+  const totalAmount = invoice.totalAmount || 0;
+  const payments = invoice.payments || [];
+  const paidAmount = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  
+  if (paidAmount === 0) {
+    return { status: 'Unpaid', paidAmount: 0 };
+  } else if (paidAmount >= totalAmount) {
+    return { status: 'Paid', paidAmount };
+  } else {
+    return { status: 'Partial Paid', paidAmount };
+  }
+}
+
 export default function InvoicePage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
@@ -615,21 +630,27 @@ export default function InvoicePage() {
                         ₹{inv.totalAmount.toLocaleString()}
                       </TableCell>
                       <TableCell>
-                        {inv.isPaid ? (
-                          <div className="space-y-1">
-                            <Badge className="bg-green-600 text-white hover:bg-green-700">Paid</Badge>
-                            <div className="text-[10px] text-slate-500">
-                              {inv.paymentDate && format(new Date(inv.paymentDate), "dd MMM yyyy")}
-                              {inv.paymentMethod && ` • ${inv.paymentMethod}`}
+                        {(() => {
+                          const { status, paidAmount } = getPaymentStatus(inv);
+                          const badgeColor = status === 'Paid' ? 'bg-green-600' : status === 'Partial Paid' ? 'bg-amber-600' : undefined;
+                          
+                          return (
+                            <div className="space-y-1">
+                              <Badge className={`${badgeColor} text-white hover:opacity-90`}>
+                                {status}
+                              </Badge>
+                              {paidAmount > 0 && (
+                                <div className="text-[10px] text-slate-500">
+                                  Paid: ₹{paidAmount.toLocaleString()} / ₹{inv.totalAmount.toLocaleString()}
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        ) : (
-                          <Badge variant="outline" className="text-slate-500">Unpaid</Badge>
-                        )}
+                          );
+                        })()}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          {!inv.isPaid && (
+                          {getPaymentStatus(inv).status !== 'Paid' && (
                             <Button
                               size="sm"
                               variant="outline"

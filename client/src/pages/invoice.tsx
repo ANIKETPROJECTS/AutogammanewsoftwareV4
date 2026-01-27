@@ -123,12 +123,14 @@ function PrintableInvoice({ invoice }: { invoice: Invoice }) {
           <p className="text-xl font-bold text-slate-900">{invoice.customerName}</p>
           <p className="text-slate-600">{invoice.phoneNumber}</p>
           {invoice.emailAddress && <p className="text-slate-600">{invoice.emailAddress}</p>}
-          {invoice.isPaid && (
+          {invoice.payments && invoice.payments.length > 0 && (
             <div className="mt-4 pt-4 border-t border-slate-200">
               <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Payment Status</p>
               <div className="space-y-3 mt-2">
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-green-600 text-white">PAID</Badge>
+                  <Badge className={invoice.isPaid ? "bg-green-600 text-white" : "bg-yellow-500 text-white"}>
+                    {invoice.isPaid ? "PAID" : "PARTIAL"}
+                  </Badge>
                   <span className="text-sm font-bold text-slate-700">₹{invoice.payments?.reduce((acc, p) => acc + (p.amount || 0), 0).toLocaleString()}</span>
                 </div>
                 {invoice.payments && invoice.payments.length > 0 && (

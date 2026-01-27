@@ -9,7 +9,8 @@ import {
   TrendingUp,
   Activity,
   History,
-  Box
+  Box,
+  Calendar
 } from "lucide-react";
 import { 
   AreaChart, 
@@ -79,33 +80,64 @@ export default function DashboardPage() {
         </div>
 
         {/* Tickets Section */}
-        <Card className="border-none shadow-sm overflow-hidden">
-          <CardHeader className="bg-slate-50/50 border-b py-3 px-6 flex flex-row items-center gap-2">
-            <History className="h-4 w-4 text-red-600" />
-            <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">Tickets</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y">
-              {data?.activeJobs && data.activeJobs.length > 0 ? (
-                data.activeJobs.map((job) => (
-                  <div key={job.id} className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-slate-900">{job.customerName}</p>
-                      <p className="text-sm text-slate-500">{job.vehicleInfo}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="border-none shadow-sm overflow-hidden">
+            <CardHeader className="bg-slate-50/50 border-b py-3 px-6 flex flex-row items-center gap-2">
+              <History className="h-4 w-4 text-red-600" />
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">Tickets</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y">
+                {data?.activeJobs && data.activeJobs.length > 0 ? (
+                  data.activeJobs.map((job) => (
+                    <div key={job.id} className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between">
+                      <div>
+                        <p className="font-bold text-slate-900">{job.customerName}</p>
+                        <p className="text-sm text-slate-500">{job.vehicleInfo}</p>
+                      </div>
+                      <Badge variant="outline" className="bg-red-50 text-red-600 border-red-100 font-bold">
+                        {job.status}
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="bg-red-50 text-red-600 border-red-100 font-bold">
-                      {job.status}
-                    </Badge>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-muted-foreground">
+                    No tickets currently.
                   </div>
-                ))
-              ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                  No tickets currently.
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-sm overflow-hidden">
+            <CardHeader className="bg-slate-50/50 border-b py-3 px-6 flex flex-row items-center gap-2">
+              <Calendar className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">Upcoming Appointments</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y">
+                {data?.upcomingAppointments && data.upcomingAppointments.length > 0 ? (
+                  data.upcomingAppointments.map((appt) => (
+                    <div key={appt.id} className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between">
+                      <div>
+                        <p className="font-bold text-slate-900">{appt.customerName}</p>
+                        <p className="text-sm text-slate-500">{appt.vehicleInfo} • {appt.serviceType}</p>
+                        <p className="text-xs text-slate-400 font-medium mt-0.5">{appt.date} at {appt.time}</p>
+                      </div>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-100 font-bold">
+                        Scheduled
+                      </Badge>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-muted-foreground">
+                    No upcoming appointments.
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </Layout>
   );

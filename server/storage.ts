@@ -362,6 +362,11 @@ export class MongoStorage implements IStorage {
       return acc + (inv.totalAmount - paidAmount);
     }, 0);
 
+    const upcomingAppointments = await AppointmentModel.find({
+      status: "SCHEDULED",
+      date: { $gte: new Date().toISOString().split('T')[0] }
+    }).sort({ date: 1, time: 1 }).limit(5);
+
     return {
       stats: [
         { label: "Inquiries Today", value: inquiriesToday.toString(), subtext: "Inquiries received today", icon: "MessageCircle" },
@@ -376,6 +381,14 @@ export class MongoStorage implements IStorage {
         customerName: t.customerName,
         vehicleInfo: t.note,
         status: "Open",
+      })),
+      upcomingAppointments: upcomingAppointments.map(a => ({
+        id: a._id.toString(),
+        customerName: a.customerName,
+        vehicleInfo: a.vehicleInfo,
+        date: a.date,
+        time: a.time,
+        serviceType: a.serviceType,
       })),
     };
   }

@@ -50,6 +50,14 @@ export const dashboardDataSchema = z.object({
     vehicleInfo: z.string(),
     status: z.string(),
   })).default([]),
+  upcomingAppointments: z.array(z.object({
+    id: z.string(),
+    customerName: z.string(),
+    vehicleInfo: z.string(),
+    date: z.string(),
+    time: z.string(),
+    serviceType: z.string(),
+  })).default([]),
 });
 
 export type DashboardData = z.infer<typeof dashboardDataSchema>;

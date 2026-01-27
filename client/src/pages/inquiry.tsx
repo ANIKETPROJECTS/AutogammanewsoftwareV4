@@ -394,8 +394,8 @@ Auto Gamma Car Care Studio`;
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Tickets</h1>
-          <p className="text-sm text-muted-foreground">Manage notes and reminders linked to customers</p>
+          <h1 className="text-2xl font-bold text-foreground">Inquiries</h1>
+          <p className="text-sm text-muted-foreground">Manage service and product inquiries from potential customers</p>
         </div>
 
         <div className="flex flex-col md:flex-row gap-4">
@@ -440,8 +440,8 @@ Auto Gamma Car Care Studio`;
           <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto p-0">
             <div className="p-6 space-y-6">
               <DialogHeader>
-                <DialogTitle className="text-xl font-bold">Tickets</DialogTitle>
-                <p className="text-sm text-muted-foreground">Manage notes and reminders linked to customers</p>
+                <DialogTitle className="text-xl font-bold">Inquiry</DialogTitle>
+                <p className="text-sm text-muted-foreground">Create a new inquiry for a customer</p>
               </DialogHeader>
 
               <Form {...form}>

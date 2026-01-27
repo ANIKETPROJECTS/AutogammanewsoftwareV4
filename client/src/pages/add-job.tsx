@@ -1069,6 +1069,69 @@ export default function AddJobPage() {
                     </FormItem>
                   )}
                 />
+
+                {/* Pricing Table */}
+                <div className="mt-8 border-t pt-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
+                    <FileText className="h-5 w-5 text-red-600" />
+                    Estimated Pricing
+                  </h3>
+                  <div className="bg-slate-50 rounded-lg border overflow-hidden">
+                    <div className="p-4 space-y-3">
+                      {[...form.watch("services"), ...form.watch("ppfs"), ...form.watch("accessories")].map((item, idx) => (
+                        <div key={idx} className="flex justify-between items-center text-sm">
+                          <span className="text-slate-600">{item.name} {item.quantity ? `(x${item.quantity})` : ""}</span>
+                          <span className="font-semibold">₹{(item.price || 0).toLocaleString()}</span>
+                        </div>
+                      ))}
+                      {form.watch("laborCharge") > 0 && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-600">Labor Charge</span>
+                          <span className="font-semibold">₹{form.watch("laborCharge").toLocaleString()}</span>
+                        </div>
+                      )}
+                      
+                      <div className="border-t pt-2 mt-2 space-y-2">
+                        <div className="flex justify-between items-center text-sm font-medium">
+                          <span className="text-slate-500">Subtotal</span>
+                          <span>₹{(
+                            [...form.watch("services"), ...form.watch("ppfs"), ...form.watch("accessories")].reduce((acc, curr) => acc + (curr.price || 0), 0) + 
+                            Number(form.watch("laborCharge") || 0)
+                          ).toLocaleString()}</span>
+                        </div>
+                        
+                        {form.watch("discount") > 0 && (
+                          <div className="flex justify-between items-center text-sm font-medium text-green-600">
+                            <span>Discount</span>
+                            <span>-₹{form.watch("discount").toLocaleString()}</span>
+                          </div>
+                        )}
+                        
+                        <div className="flex justify-between items-center text-sm font-medium text-slate-500">
+                          <span>GST ({form.watch("gst")}%)</span>
+                          <span>₹{Math.round(
+                            ([...form.watch("services"), ...form.watch("ppfs"), ...form.watch("accessories")].reduce((acc, curr) => acc + (curr.price || 0), 0) + 
+                            Number(form.watch("laborCharge") || 0) - 
+                            Number(form.watch("discount") || 0)) * 
+                            (form.watch("gst") / 100)
+                          ).toLocaleString()}</span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+                          <span className="text-base font-bold text-slate-900">Total Estimated Cost</span>
+                          <span className="text-xl font-black text-red-600">
+                            ₹{Math.round(
+                              ([...form.watch("services"), ...form.watch("ppfs"), ...form.watch("accessories")].reduce((acc, curr) => acc + (curr.price || 0), 0) + 
+                              Number(form.watch("laborCharge") || 0) - 
+                              Number(form.watch("discount") || 0)) * 
+                              (1 + form.watch("gst") / 100)
+                            ).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 

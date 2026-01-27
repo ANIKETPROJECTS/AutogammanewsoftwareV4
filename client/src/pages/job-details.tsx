@@ -17,11 +17,20 @@ import {
   XCircle,
   PlayCircle,
   Trash2,
-  Package
+  Package,
+  FileText
 } from "lucide-react";
 import { format } from "date-fns";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function JobDetailsPage() {
   const [, params] = useRoute("/job-cards/:id");
@@ -216,58 +225,57 @@ export default function JobDetailsPage() {
                 </div>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="divide-y">
-                  {job.services.map((service, idx) => (
-                    <div key={idx} className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Service Type</p>
-                        <p className="text-base font-semibold text-slate-800">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
+                      <TableHead className="w-[10%] text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-6">Type</TableHead>
+                      <TableHead className="w-[50%] text-[10px] font-bold text-slate-400 uppercase tracking-widest">Description</TableHead>
+                      <TableHead className="w-[15%] text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quantity</TableHead>
+                      <TableHead className="w-[25%] text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest pr-6">Price</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {job.services.map((service, idx) => (
+                      <TableRow key={`service-${idx}`}>
+                        <TableCell className="pl-6">
+                          <Badge variant="outline" className="text-[10px] uppercase bg-blue-50 text-blue-700 border-blue-200">Service</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm font-semibold text-slate-800">
                           {service.name.split(" - Tech:")[0]}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Price</p>
-                        <p className="text-base font-semibold text-slate-800">₹{service.price.toLocaleString()}</p>
-                      </div>
-                    </div>
-                  ))}
-                  {job.ppfs.map((ppf, idx) => (
-                    <div key={idx} className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">PPF Service</p>
-                        <p className="text-base font-semibold text-slate-800">
-                          {ppf.name.split(" - Tech:")[0]}
-                        </p>
-                      </div>
-                      {ppf.rollUsed && (
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">SQFT Used</p>
-                          <p className="text-base font-semibold text-slate-800">{ppf.rollUsed} SQFT</p>
-                        </div>
-                      )}
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Price</p>
-                        <p className="text-base font-semibold text-slate-800">₹{ppf.price.toLocaleString()}</p>
-                      </div>
-                    </div>
-                  ))}
-                  {job.accessories.map((accessory, idx) => (
-                    <div key={idx} className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Accessory</p>
-                        <p className="text-base font-semibold text-slate-800">{accessory.name}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Quantity</p>
-                        <p className="text-base font-semibold text-slate-800">{accessory.quantity || 1}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Price</p>
-                        <p className="text-base font-semibold text-slate-800">₹{accessory.price.toLocaleString()}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                        </TableCell>
+                        <TableCell className="text-center text-sm text-slate-600">1</TableCell>
+                        <TableCell className="text-right pr-6 text-sm font-bold text-slate-900">₹{service.price.toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                    {job.ppfs.map((ppf, idx) => (
+                      <TableRow key={`ppf-${idx}`}>
+                        <TableCell className="pl-6">
+                          <Badge variant="outline" className="text-[10px] uppercase bg-purple-50 text-purple-700 border-purple-200">PPF</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm font-semibold text-slate-800">
+                          <div className="flex flex-col">
+                            <span>{ppf.name.split(" - Tech:")[0]}</span>
+                            {ppf.rollUsed && (
+                              <span className="text-[10px] text-slate-500 font-normal mt-0.5">Usage: {ppf.rollUsed} SQFT</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center text-sm text-slate-600">1</TableCell>
+                        <TableCell className="text-right pr-6 text-sm font-bold text-slate-900">₹{ppf.price.toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                    {job.accessories.map((accessory, idx) => (
+                      <TableRow key={`acc-${idx}`}>
+                        <TableCell className="pl-6">
+                          <Badge variant="outline" className="text-[10px] uppercase bg-orange-50 text-orange-700 border-orange-200">Accessory</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm font-semibold text-slate-800">{accessory.name}</TableCell>
+                        <TableCell className="text-center text-sm text-slate-600">{accessory.quantity || 1}</TableCell>
+                        <TableCell className="text-right pr-6 text-sm font-bold text-slate-900">₹{accessory.price.toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
                 {job.serviceNotes && (
                   <div className="p-6 border-t bg-slate-50/30">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Service Notes</p>

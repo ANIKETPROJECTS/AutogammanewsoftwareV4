@@ -126,12 +126,30 @@ function PrintableInvoice({ invoice }: { invoice: Invoice }) {
           {invoice.isPaid && (
             <div className="mt-4 pt-4 border-t border-slate-200">
               <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Payment Status</p>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge className="bg-green-600 text-white">PAID</Badge>
-                <span className="text-sm font-medium text-slate-700">
-                  {invoice.paymentDate && format(new Date(invoice.paymentDate), "dd MMM yyyy")}
-                  {invoice.paymentMethod && ` via ${invoice.paymentMethod}`}
-                </span>
+              <div className="space-y-3 mt-2">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-green-600 text-white">PAID</Badge>
+                  <span className="text-sm font-bold text-slate-700">₹{invoice.payments?.reduce((acc, p) => acc + (p.amount || 0), 0).toLocaleString()}</span>
+                </div>
+                {invoice.payments && invoice.payments.length > 0 && (
+                  <div className="bg-white border rounded p-2 space-y-2">
+                    {invoice.payments.map((p, i) => (
+                      <div key={i} className="flex justify-between items-center text-xs border-b border-slate-100 pb-1 last:border-0 last:pb-0">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-700">{p.method}</span>
+                          <span className="text-slate-400">{p.date ? format(new Date(p.date), "dd MMM yyyy") : "-"}</span>
+                        </div>
+                        <span className="font-black text-slate-900">₹{(p.amount || 0).toLocaleString()}</span>
+                      </div>
+                    ))}
+                    {invoice.totalAmount - (invoice.payments?.reduce((acc, p) => acc + (p.amount || 0), 0) || 0) > 0 && (
+                      <div className="flex justify-between items-center pt-1 border-t border-red-100 text-red-600">
+                        <span className="font-bold uppercase tracking-tighter text-[10px]">Remaining Balance</span>
+                        <span className="font-black">₹{(invoice.totalAmount - (invoice.payments?.reduce((acc, p) => acc + (p.amount || 0), 0) || 0)).toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

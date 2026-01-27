@@ -1363,9 +1363,9 @@ export default function AddJobPage() {
                     </div>
                     
                     {payments.map((payment, index) => (
-                      <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-slate-50 p-3 rounded-md relative group">
-                        <div className="md:col-span-4">
-                          <label className="text-xs font-semibold text-slate-500 mb-1 block uppercase">Method</label>
+                      <div key={index} className="flex flex-row items-end gap-3 bg-slate-50 p-3 rounded-md relative group">
+                        <div className="flex-1 min-w-[140px]">
+                          <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase tracking-wider">Method</label>
                           <Select 
                             value={payment.method} 
                             onValueChange={(val) => handlePaymentChange(index, "method", val)}
@@ -1381,8 +1381,8 @@ export default function AddJobPage() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="md:col-span-4">
-                          <label className="text-xs font-semibold text-slate-500 mb-1 block uppercase">Date</label>
+                        <div className="flex-1 min-w-[140px]">
+                          <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase tracking-wider">Date</label>
                           <Input
                             type="date"
                             value={payment.date}
@@ -1390,8 +1390,8 @@ export default function AddJobPage() {
                             className="h-9"
                           />
                         </div>
-                        <div className="md:col-span-3">
-                          <label className="text-xs font-semibold text-slate-500 mb-1 block uppercase">Amount</label>
+                        <div className="flex-1 min-w-[120px]">
+                          <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase tracking-wider">Amount</label>
                           <Input
                             type="number"
                             value={payment.amount}
@@ -1400,14 +1400,14 @@ export default function AddJobPage() {
                             className="h-9 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                         </div>
-                        <div className="md:col-span-1 flex justify-end">
+                        <div className="flex-none">
                           {payments.length > 1 && (
                             <Button
                               type="button"
                               variant="ghost"
                               size="icon"
                               onClick={() => handleRemovePayment(index)}
-                              className="h-9 w-9 text-red-500 hover:text-red-700 hover:bg-red-50"
+                              className="h-9 w-9 text-slate-300 hover:text-red-600 hover:bg-red-50"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

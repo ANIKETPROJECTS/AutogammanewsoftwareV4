@@ -570,25 +570,6 @@ Auto Gamma Car Care Studio`;
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">Services Requested</p>
-                        <div className="bg-slate-50 p-2 rounded-md border border-slate-100 min-h-[40px] flex flex-wrap gap-2">
-                          {(inquiry.services || []).map((s, idx) => (
-                            <Badge key={idx} variant="secondary" className="bg-white text-slate-700 border-slate-200">
-                              {s.serviceName} ({s.vehicleType})
-                            </Badge>
-                          ))}
-                          {(inquiry.accessories || []).map((a, idx) => (
-                            <Badge key={idx} variant="secondary" className="bg-white text-slate-700 border-slate-200">
-                              {a.accessoryName}
-                            </Badge>
-                          ))}
-                          {(!inquiry.services || inquiry.services.length === 0) && (!inquiry.accessories || inquiry.accessories.length === 0) && (
-                            <span className="text-sm text-muted-foreground italic">No items requested</span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
                         <p className="text-[10px] font-bold text-slate-400 uppercase">Special Notes</p>
                         <div className="bg-orange-50/50 p-2 rounded-md border border-orange-100 text-sm italic text-slate-600 min-h-[40px]">
                           "{inquiry.notes || "None"}"
@@ -596,28 +577,8 @@ Auto Gamma Car Care Studio`;
                       </div>
                     </div>
 
-                    {/* Right Column: Pricing and Actions */}
+                    {/* Right Column: Actions */}
                     <div className="lg:w-1/3 space-y-6 flex flex-col">
-                      <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex-1 grid grid-cols-3 gap-4">
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Our Price</p>
-                          <p className="text-base font-bold">₹{(inquiry.ourPrice || 0).toLocaleString()}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Customer Price</p>
-                          <p className="text-base font-bold">₹{(inquiry.customerPrice || 0).toLocaleString()}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Difference</p>
-                          <p className={`text-sm font-bold ${diff >= 0 ? "text-green-600" : "text-red-600"}`}>
-                            {diff >= 0 ? "+" : ""}₹{diff.toLocaleString()}
-                          </p>
-                          <p className={`text-[10px] ${diff >= 0 ? "text-green-600" : "text-red-600"}`}>
-                            {diff >= 0 ? "+" : ""}{diffPercent.toFixed(1)}%
-                          </p>
-                        </div>
-                      </div>
-
                       <div className="space-y-3">
                         <div className="flex justify-between items-center text-[10px] font-medium text-slate-400">
                           <span>Inquiry ID: {inquiry.inquiryId}</span>
@@ -703,55 +664,6 @@ Auto Gamma Car Care Studio`;
                     <div className="space-y-1">
                       <p className="text-[10px] font-bold text-slate-400 uppercase">Email</p>
                       <p className="text-sm font-bold">{viewingInquiry.email || "N/A"}</p>
-                    </div>
-                  </div>
-
-                  <div className="border rounded-md overflow-hidden">
-                    <Table>
-                      <TableHeader className="bg-slate-50">
-                        <TableRow>
-                          <TableHead className="text-[10px] font-bold uppercase">Service Name</TableHead>
-                          <TableHead className="text-[10px] font-bold uppercase text-right">Service Price</TableHead>
-                          <TableHead className="text-[10px] font-bold uppercase text-right">Customer Price</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {viewingInquiry.services.map((s, idx) => (
-                          <TableRow key={`s-${idx}`}>
-                            <TableCell className="text-sm">
-                              {s.serviceName}
-                              <div className="text-[10px] text-muted-foreground">{s.vehicleType}</div>
-                            </TableCell>
-                            <TableCell className="text-right text-sm">₹{s.price.toLocaleString()}</TableCell>
-                            <TableCell className="text-right text-sm font-bold">₹{(s.customerPrice ?? s.price).toLocaleString()}</TableCell>
-                          </TableRow>
-                        ))}
-                        {viewingInquiry.accessories.map((a, idx) => (
-                          <TableRow key={`a-${idx}`}>
-                            <TableCell className="text-sm">{a.accessoryName}</TableCell>
-                            <TableCell className="text-right text-sm">₹{a.price.toLocaleString()}</TableCell>
-                            <TableCell className="text-right text-sm font-bold">₹{(a.customerPrice ?? a.price).toLocaleString()}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-100">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">Our Price</p>
-                      <p className="text-lg font-bold">₹{viewingInquiry.ourPrice.toLocaleString()}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">Customer Price</p>
-                      <p className="text-lg font-bold">₹{viewingInquiry.customerPrice.toLocaleString()}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">Difference</p>
-                      <p className={`text-lg font-bold ${viewingInquiry.customerPrice - viewingInquiry.ourPrice >= 0 ? "text-green-600" : "text-red-600"}`}>
-                        {viewingInquiry.customerPrice - viewingInquiry.ourPrice >= 0 ? "+" : ""}
-                        ₹{(viewingInquiry.customerPrice - viewingInquiry.ourPrice).toLocaleString()}
-                      </p>
                     </div>
                   </div>
 

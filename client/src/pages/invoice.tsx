@@ -295,17 +295,34 @@ export default function InvoicePage() {
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
 
+  const [paymentAmount, setPaymentAmount] = useState("");
+
   const updatePaymentMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string, data: any }) => {
+      const currentInvoice = invoices.find(inv => inv.id === id);
+      if (!currentInvoice) throw new Error("Invoice not found");
+      
+      const newPayment = {
+        amount: Number(data.amount),
+        method: data.paymentMethod,
+        date: data.paymentDate
+      };
+      
+      const existingPayments = currentInvoice.payments || [];
+      const updatedPayments = [...existingPayments, newPayment];
+      const totalPaid = updatedPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+      const isFullyPaid = totalPaid >= (currentInvoice.totalAmount || 0);
+
       await apiRequest("PATCH", `/api/invoices/${id}`, {
-        ...data,
-        isPaid: true
+        payments: updatedPayments,
+        isPaid: isFullyPaid
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
-      toast({ title: "Success", description: "Payment status updated" });
+      toast({ title: "Success", description: "Payment recorded successfully" });
       setShowViewPaymentDialog(false);
+      setPaymentAmount("");
     },
   });
 
@@ -745,42 +762,79 @@ export default function InvoicePage() {
             <DialogTitle>Mark Invoice as Paid</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
+              <div className="flex justify-between text-xs text-slate-500 uppercase font-bold mb-1">
+                <span>Total Amount</span>
+                <span>Remaining</span>
+              </div>
+              <div className="flex justify-between text-lg font-black">
+                <span className="text-slate-900">₹{selectedInvoice?.totalAmount?.toLocaleString()}</span>
+                <span className="text-red-600">₹{(selectedInvoice ? (selectedInvoice.totalAmount - (selectedInvoice.payments?.reduce((acc, p) => acc + (p.amount || 0), 0) || 0)) : 0).toLocaleString()}</span>
+              </div>
+            </div>
+
             <div className="space-y-1">
-              <label className="text-sm font-bold">Payment Date</label>
+              <label className="text-sm font-bold text-slate-700">Payment Amount</label>
               <Input 
-                type="date" 
-                value={paymentDate}
-                onChange={(e) => setPaymentDate(e.target.value)}
+                type="number" 
+                placeholder="Enter amount"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                className="font-bold text-lg"
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-bold">Payment Method</label>
-              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Method" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Cash">Cash</SelectItem>
-                  <SelectItem value="UPI / GPay">UPI / GPay</SelectItem>
-                  <SelectItem value="Card">Card</SelectItem>
-                  <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                </SelectContent>
-              </Select>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-sm font-bold text-slate-700">Payment Date</label>
+                <Input 
+                  type="date" 
+                  value={paymentDate}
+                  onChange={(e) => setPaymentDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-bold text-slate-700">Payment Method</label>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Cash">Cash</SelectItem>
+                    <SelectItem value="UPI / GPay">UPI / GPay</SelectItem>
+                    <SelectItem value="Card">Card</SelectItem>
+                    <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowViewPaymentDialog(false)}>Cancel</Button>
             <Button 
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-green-600 hover:bg-green-700 text-white font-bold"
               onClick={() => {
-                if (selectedInvoice?.id) {
+                if (selectedInvoice?.id && paymentAmount) {
+                  const amount = Number(paymentAmount);
+                  const remaining = selectedInvoice.totalAmount - (selectedInvoice.payments?.reduce((acc, p) => acc + (p.amount || 0), 0) || 0);
+                  
+                  if (amount <= 0) {
+                    toast({ title: "Invalid Amount", description: "Please enter a valid payment amount", variant: "destructive" });
+                    return;
+                  }
+                  
+                  if (amount > remaining + 1) { // Small buffer for rounding
+                    toast({ title: "Amount Exceeded", description: `Amount exceeds remaining balance of ₹${remaining.toLocaleString()}`, variant: "destructive" });
+                    return;
+                  }
+
                   updatePaymentMutation.mutate({
                     id: selectedInvoice.id,
-                    data: { isPaid: true, paymentMethod, paymentDate }
+                    data: { amount, paymentMethod, paymentDate }
                   });
                 }
               }}
-              disabled={updatePaymentMutation.isPending}
+              disabled={updatePaymentMutation.isPending || !paymentAmount}
             >
               Confirm Payment
             </Button>

@@ -225,10 +225,14 @@ export default function JobDetailsPage() {
                           {service.name.split(" - Tech:")[0]}
                         </p>
                       </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Price</p>
+                        <p className="text-base font-semibold text-slate-800">₹{service.price.toLocaleString()}</p>
+                      </div>
                     </div>
                   ))}
                   {job.ppfs.map((ppf, idx) => (
-                    <div key={idx} className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div key={idx} className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">PPF Service</p>
                         <p className="text-base font-semibold text-slate-800">
@@ -241,10 +245,14 @@ export default function JobDetailsPage() {
                           <p className="text-base font-semibold text-slate-800">{ppf.rollUsed} SQFT</p>
                         </div>
                       )}
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Price</p>
+                        <p className="text-base font-semibold text-slate-800">₹{ppf.price.toLocaleString()}</p>
+                      </div>
                     </div>
                   ))}
                   {job.accessories.map((accessory, idx) => (
-                    <div key={idx} className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div key={idx} className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Accessory</p>
                         <p className="text-base font-semibold text-slate-800">{accessory.name}</p>
@@ -252,6 +260,10 @@ export default function JobDetailsPage() {
                       <div>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Quantity</p>
                         <p className="text-base font-semibold text-slate-800">{accessory.quantity || 1}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Price</p>
+                        <p className="text-base font-semibold text-slate-800">₹{accessory.price.toLocaleString()}</p>
                       </div>
                     </div>
                   ))}

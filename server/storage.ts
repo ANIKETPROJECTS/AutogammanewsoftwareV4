@@ -22,9 +22,9 @@ import {
   Invoice
 } from "@shared/schema";
 import session from "express-session";
-import createMemoryStore from "memorystore";
+import MongoStore from "connect-mongodb-session";
 
-const MemoryStore = createMemoryStore(session);
+const MongoDBStore = MongoStore(session);
 
 // Mongoose Schemas
 const userSchema = new mongoose.Schema({
@@ -285,8 +285,9 @@ export class MongoStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+    this.sessionStore = new MongoDBStore({
+      uri: process.env.MONGODB_URI || "mongodb://localhost:27017/autogamma",
+      collection: "sessions",
     });
   }
 

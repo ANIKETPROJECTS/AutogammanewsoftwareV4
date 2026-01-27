@@ -1,6 +1,7 @@
 import { Bell, Menu, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UpcomingAppointments } from "./upcoming-appointments";
+import { Notifications } from "./notifications";
 
 interface TopbarProps {
   toggleSidebar?: () => void;
@@ -23,11 +24,7 @@ export function Topbar({ toggleSidebar }: TopbarProps) {
 
       <div className="flex items-center gap-4">
         <UpcomingAppointments />
-        
-        <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-primary">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full border-2 border-white"></span>
-        </Button>
+        <Notifications />
         
         <div className="flex items-center gap-3 pl-4 border-l border-border">
           <div className="text-right hidden sm:block">

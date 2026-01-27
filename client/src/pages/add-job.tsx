@@ -77,22 +77,6 @@ export default function AddJobPage() {
   const [, setLocation] = useLocation();
   const searchParams = new URLSearchParams(useSearch());
   const jobId = searchParams.get("id");
-  const [showBusinessDialog, setShowBusinessDialog] = useState(false);
-  const [pendingFormData, setPendingFormData] = useState<JobCardFormValues | null>(null);
-  const [businessAssignments, setBusinessAssignments] = useState<Record<string, "Auto Gamma" | "AGNX">>({});
-  const [laborBusiness, setLaborBusiness] = useState<"Auto Gamma" | "AGNX">("Auto Gamma");
-  const [markAsPaid, setMarkAsPaid] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("Cash");
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
-
-  const form = useForm<JobCardFormValues>({
-    resolver: zodResolver(jobCardSchema),
-    defaultValues: {
-      customerName: "",
-      phoneNumber: "",
-      emailAddress: "",
-      referralSource: "",
-      referrerName: "",
       referrerPhone: "",
       make: "",
       model: "",
@@ -240,6 +224,7 @@ export default function AddJobPage() {
   const [rollQty, setRollQty] = useState(0);
   const [selectedAccessoryCategory, setSelectedAccessoryCategory] = useState("");
   const [selectedAccessory, setSelectedAccessory] = useState("");
+  const [businessAssignments, setBusinessAssignments] = useState<Record<string, string>>({});
 
   const handleAddService = () => {
     const s = services.find(item => item.id === selectedService);
@@ -257,10 +242,9 @@ export default function AddJobPage() {
 
     const vehiclePricing = s?.pricingByVehicleType.find(p => p.vehicleType === vehicleType);
     
-    if (s) {
-      appendService({ 
-        serviceId: s.id!, 
-        name: `${s.name} (${vehicleType})`,
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
+  const [markAsPaid, setMarkAsPaid] = useState(false);
         price: vehiclePricing?.price || 0,
         technician: tech?.name
       } as any);
@@ -456,7 +440,7 @@ export default function AddJobPage() {
       laborBusiness: laborBusiness,
       discount: Number(pendingFormData.discount),
       gst: Number(pendingFormData.gst),
-      isPaid: markAsPaid,
+      isPaid: markAsPaid, paymentMethod: markAsPaid ? paymentMethod : undefined, paymentDate: markAsPaid ? paymentDate : undefined,
       paymentMethod: markAsPaid ? paymentMethod : undefined,
       paymentDate: markAsPaid ? paymentDate : undefined,
     };
@@ -1266,6 +1250,51 @@ export default function AddJobPage() {
                   </div>
                 </div>
               )}
+
+              <div className="pt-4 border-t space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <label className="text-sm font-bold">Mark as Paid</label>
+                    <p className="text-xs text-muted-foreground">Has the customer already paid for this service?</p>
+                  </div>
+                  <div className="flex items-center h-9">
+                    <input 
+                      type="checkbox" 
+                      checked={markAsPaid} 
+                      onChange={(e) => setMarkAsPaid(e.target.checked)}
+                      className="h-5 w-5 rounded border-gray-300 text-red-600 focus:ring-red-600"
+                    />
+                  </div>
+                </div>
+
+                {markAsPaid && (
+                  <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Payment Date</label>
+                      <Input 
+                        type="date" 
+                        value={paymentDate}
+                        onChange={(e) => setPaymentDate(e.target.value)}
+                        className="h-10"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Payment Method</label>
+                      <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Select Method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Cash">Cash</SelectItem>
+                          <SelectItem value="UPI / GPay">UPI / GPay</SelectItem>
+                          <SelectItem value="Card">Card</SelectItem>
+                          <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0">

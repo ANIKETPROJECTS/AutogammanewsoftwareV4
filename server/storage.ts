@@ -1200,6 +1200,9 @@ export class MongoStorage implements IStorage {
         discount: obj.discount ?? 0,
         laborCharge: obj.laborCharge ?? 0,
         gstPercentage: obj.gstPercentage ?? 18,
+        isPaid: obj.isPaid ?? false,
+        paymentMethod: obj.paymentMethod,
+        paymentDate: obj.paymentDate,
       };
       
       // Enrich with job card data if vehicle details are missing

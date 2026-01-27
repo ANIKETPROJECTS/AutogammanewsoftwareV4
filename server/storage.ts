@@ -159,7 +159,13 @@ const jobCardMongoSchema = new mongoose.Schema({
   date: { type: String, required: true },
   estimatedCost: { type: Number, required: true },
   technician: { type: String },
-  vehicleType: { type: String }
+  vehicleType: { type: String },
+  isPaid: { type: Boolean, default: false },
+  payments: [{
+    amount: Number,
+    method: String,
+    date: String
+  }]
 });
 
 export const JobCardModel = mongoose.model("JobCard", jobCardMongoSchema);
@@ -987,7 +993,9 @@ export class MongoStorage implements IStorage {
             laborCharge: bizLaborCharge,
             gstPercentage: j.gst,
             gstAmount,
-            totalAmount
+            totalAmount,
+            isPaid: (j as any).isPaid,
+            payments: (j as any).payments || []
           });
         } else {
           // Create new invoice if it doesn't exist
@@ -1015,7 +1023,9 @@ export class MongoStorage implements IStorage {
             gstPercentage: j.gst,
             gstAmount,
             totalAmount,
-            date: new Date().toISOString()
+            date: new Date().toISOString(),
+            isPaid: (j as any).isPaid || false,
+            payments: (j as any).payments || []
           });
           await inv.save();
         }

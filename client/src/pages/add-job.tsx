@@ -383,7 +383,9 @@ export default function AddJobPage() {
         serviceNotes: values.serviceNotes,
         estimatedCost,
         status: jobToEdit?.status || "Pending",
-        technician
+        technician,
+        isPaid: (values as any).isPaid,
+        payments: (values as any).payments
       };
       
       const method = jobId ? "PATCH" : "POST";

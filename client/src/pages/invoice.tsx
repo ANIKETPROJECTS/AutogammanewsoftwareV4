@@ -180,6 +180,13 @@ function PrintableInvoice({ invoice }: { invoice: Invoice }) {
             <span className="font-medium">Base Amount</span>
             <span className="font-bold">₹{invoice.subtotal.toLocaleString()}</span>
           </div>
+
+          {laborCharge > 0 && (
+            <div className="flex justify-between text-slate-600 pb-2 border-b border-slate-200">
+              <span className="font-medium">Labor Charges</span>
+              <span className="font-bold">₹{laborCharge.toLocaleString()}</span>
+            </div>
+          )}
           
           {discount > 0 && (
             <div className="flex justify-between text-green-600 pb-2 border-b border-slate-200">
@@ -188,16 +195,9 @@ function PrintableInvoice({ invoice }: { invoice: Invoice }) {
             </div>
           )}
 
-          {laborCharge > 0 && (
-            <div className="flex justify-between text-slate-600 pb-2 border-b border-slate-200">
-              <span className="font-medium">Labor Charges</span>
-              <span className="font-bold">₹{laborCharge.toLocaleString()}</span>
-            </div>
-          )}
-
           <div className="flex justify-between text-slate-600 pb-2 border-b border-slate-200">
             <span className="font-medium">SubTotal</span>
-            <span className="font-bold">₹{(invoice.subtotal - discount).toLocaleString()}</span>
+            <span className="font-bold">₹{(invoice.subtotal + laborCharge - discount).toLocaleString()}</span>
           </div>
 
           <div className="flex justify-between text-slate-600">

@@ -24,7 +24,7 @@ export function Notifications() {
   });
 
   const notifications = useMemo(() => {
-    const list = [];
+    const list: any[] = [];
     const now = new Date();
     const threeDaysAgo = subDays(now, 3);
 

@@ -292,24 +292,42 @@ export default function InvoicePage() {
   const [sortConfig, setSortConfig] = useState<{ key: keyof Invoice; direction: 'asc' | 'desc' } | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showPaymentDialog, setShowViewPaymentDialog] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("Cash");
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [newPayments, setNewPayments] = useState<{ amount: number | string; method: string; date: string }[]>([
+    { amount: "", method: "Cash", date: new Date().toISOString().split('T')[0] }
+  ]);
 
-  const [paymentAmount, setPaymentAmount] = useState("");
+  const handleAddPaymentRow = () => {
+    setNewPayments([...newPayments, { amount: "", method: "Cash", date: new Date().toISOString().split('T')[0] }]);
+  };
+
+  const handleRemovePaymentRow = (index: number) => {
+    if (newPayments.length > 1) {
+      setNewPayments(newPayments.filter((_, i) => i !== index));
+    }
+  };
+
+  const handlePaymentRowChange = (index: number, field: string, value: any) => {
+    const updated = [...newPayments];
+    if (field === "amount") {
+      const sanitizedValue = String(value).replace(/[^0-9.]/g, "");
+      updated[index] = { ...updated[index], [field]: sanitizedValue === "" ? "" : sanitizedValue };
+    } else {
+      updated[index] = { ...updated[index], [field]: value };
+    }
+    setNewPayments(updated);
+  };
+
+  const resetPaymentDialog = () => {
+    setNewPayments([{ amount: "", method: "Cash", date: new Date().toISOString().split('T')[0] }]);
+  };
 
   const updatePaymentMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string, data: any }) => {
+    mutationFn: async ({ id, data }: { id: string, data: { payments: { amount: number; method: string; date: string }[] } }) => {
       const currentInvoice = invoices.find(inv => inv.id === id);
       if (!currentInvoice) throw new Error("Invoice not found");
       
-      const newPayment = {
-        amount: Number(data.amount),
-        method: data.paymentMethod,
-        date: data.paymentDate
-      };
-      
       const existingPayments = currentInvoice.payments || [];
-      const updatedPayments = [...existingPayments, newPayment];
+      const updatedPayments = [...existingPayments, ...data.payments];
       const totalPaid = updatedPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
       const isFullyPaid = totalPaid >= (currentInvoice.totalAmount || 0);
 
@@ -322,7 +340,7 @@ export default function InvoicePage() {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
       toast({ title: "Success", description: "Payment recorded successfully" });
       setShowViewPaymentDialog(false);
-      setPaymentAmount("");
+      resetPaymentDialog();
     },
   });
 
@@ -756,8 +774,11 @@ export default function InvoicePage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showPaymentDialog} onOpenChange={setShowViewPaymentDialog}>
-        <DialogContent className="max-w-md">
+      <Dialog open={showPaymentDialog} onOpenChange={(open) => {
+        setShowViewPaymentDialog(open);
+        if (!open) resetPaymentDialog();
+      }}>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Mark Invoice as Paid</DialogTitle>
           </DialogHeader>
@@ -765,84 +786,125 @@ export default function InvoicePage() {
             <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
               <div className="flex justify-between text-xs text-slate-500 uppercase font-bold mb-1">
                 <span>Total Amount</span>
+                <span>Total Paid</span>
                 <span>Remaining</span>
               </div>
               <div className="flex justify-between text-lg font-black">
                 <span className="text-slate-900">₹{selectedInvoice?.totalAmount?.toLocaleString()}</span>
-                <span className="text-red-600">₹{(selectedInvoice ? (selectedInvoice.totalAmount - (selectedInvoice.payments?.reduce((acc, p) => acc + (p.amount || 0), 0) || 0)) : 0).toLocaleString()}</span>
+                <span className="text-green-600">₹{((selectedInvoice?.payments?.reduce((acc, p) => acc + (p.amount || 0), 0) || 0) + newPayments.reduce((acc, p) => acc + Number(p.amount || 0), 0)).toLocaleString()}</span>
+                <span className="text-red-600">₹{(selectedInvoice ? Math.max(0, selectedInvoice.totalAmount - (selectedInvoice.payments?.reduce((acc, p) => acc + (p.amount || 0), 0) || 0) - newPayments.reduce((acc, p) => acc + Number(p.amount || 0), 0)) : 0).toLocaleString()}</span>
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-sm font-bold text-slate-700">Payment Amount</label>
-              <Input 
-                type="number" 
-                placeholder="Enter amount"
-                value={paymentAmount}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  const remaining = selectedInvoice ? (selectedInvoice.totalAmount - (selectedInvoice.payments?.reduce((acc, p) => acc + (p.amount || 0), 0) || 0)) : 0;
-                  if (Number(val) > remaining) {
-                    setPaymentAmount(remaining.toString());
-                  } else {
-                    setPaymentAmount(val);
-                  }
-                }}
-                className="font-bold text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-slate-900">Payment Details</h4>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleAddPaymentRow}
+                  className="h-8"
+                  data-testid="button-add-payment-method"
+                >
+                  Add Payment Method
+                </Button>
+              </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-sm font-bold text-slate-700">Payment Date</label>
-                <Input 
-                  type="date" 
-                  value={paymentDate}
-                  onChange={(e) => setPaymentDate(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-sm font-bold text-slate-700">Payment Method</label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Cash">Cash</SelectItem>
-                    <SelectItem value="UPI / GPay">UPI / GPay</SelectItem>
-                    <SelectItem value="Card">Card</SelectItem>
-                    <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {newPayments.map((payment, index) => (
+                <div key={index} className="flex flex-row items-end gap-3 bg-slate-50 p-3 rounded-md relative group">
+                  <div className="flex-1 min-w-[120px]">
+                    <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase tracking-wider">Method</label>
+                    <Select 
+                      value={payment.method} 
+                      onValueChange={(val) => handlePaymentRowChange(index, "method", val)}
+                    >
+                      <SelectTrigger className="h-9" data-testid={`select-payment-method-${index}`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Cash">Cash</SelectItem>
+                        <SelectItem value="UPI / GPay">UPI / GPay</SelectItem>
+                        <SelectItem value="Card">Card</SelectItem>
+                        <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1 min-w-[120px]">
+                    <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase tracking-wider">Date</label>
+                    <Input
+                      type="date"
+                      value={payment.date}
+                      onChange={(e) => handlePaymentRowChange(index, "date", e.target.value)}
+                      className="h-9"
+                      data-testid={`input-payment-date-${index}`}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[100px]">
+                    <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase tracking-wider">Amount</label>
+                    <Input
+                      type="text"
+                      inputMode="decimal"
+                      value={payment.amount}
+                      onChange={(e) => handlePaymentRowChange(index, "amount", e.target.value)}
+                      placeholder="0"
+                      className="h-9 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      data-testid={`input-payment-amount-${index}`}
+                    />
+                  </div>
+                  <div className="flex-none">
+                    {newPayments.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemovePaymentRow(index)}
+                        className="h-9 w-9 text-slate-300 hover:text-red-600 hover:bg-red-50"
+                        data-testid={`button-remove-payment-${index}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowViewPaymentDialog(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowViewPaymentDialog(false)} data-testid="button-cancel-payment">Cancel</Button>
             <Button 
               className="bg-green-600 hover:bg-green-700 text-white font-bold"
+              data-testid="button-confirm-payment"
               onClick={() => {
-                if (selectedInvoice?.id && paymentAmount) {
-                  const amount = Number(paymentAmount);
-                  const remaining = selectedInvoice.totalAmount - (selectedInvoice.payments?.reduce((acc, p) => acc + (p.amount || 0), 0) || 0);
+                if (selectedInvoice?.id) {
+                  const validPayments = newPayments
+                    .filter(p => Number(p.amount) > 0)
+                    .map(p => ({
+                      amount: Number(p.amount),
+                      method: p.method,
+                      date: p.date
+                    }));
                   
-                  if (amount <= 0) {
-                    toast({ title: "Invalid Amount", description: "Please enter a valid payment amount", variant: "destructive" });
+                  if (validPayments.length === 0) {
+                    toast({ title: "Invalid Amount", description: "Please enter at least one valid payment amount", variant: "destructive" });
                     return;
                   }
                   
-                  if (amount > remaining + 1) { // Small buffer for rounding
-                    toast({ title: "Amount Exceeded", description: `Amount exceeds remaining balance of ₹${remaining.toLocaleString()}`, variant: "destructive" });
+                  const totalNewPayments = validPayments.reduce((sum, p) => sum + p.amount, 0);
+                  const remaining = selectedInvoice.totalAmount - (selectedInvoice.payments?.reduce((acc, p) => acc + (p.amount || 0), 0) || 0);
+                  
+                  if (totalNewPayments > remaining + 1) {
+                    toast({ title: "Amount Exceeded", description: `Total amount exceeds remaining balance of ₹${remaining.toLocaleString()}`, variant: "destructive" });
                     return;
                   }
 
                   updatePaymentMutation.mutate({
                     id: selectedInvoice.id,
-                    data: { amount, paymentMethod, paymentDate }
+                    data: { payments: validPayments }
                   });
                 }
               }}
-              disabled={updatePaymentMutation.isPending || !paymentAmount}
+              disabled={updatePaymentMutation.isPending || newPayments.every(p => !p.amount || Number(p.amount) <= 0)}
             >
               Confirm Payment
             </Button>

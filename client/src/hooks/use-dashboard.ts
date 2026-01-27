@@ -9,5 +9,6 @@ export function useDashboard() {
       if (!res.ok) throw new Error("Failed to fetch dashboard data");
       return api.dashboard.get.responses[200].parse(await res.json());
     },
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 }

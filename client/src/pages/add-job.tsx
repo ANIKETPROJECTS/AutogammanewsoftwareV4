@@ -259,6 +259,10 @@ export default function AddJobPage() {
     let finalValue = value;
     
     if (field === "amount") {
+      // Remove any non-numeric characters except for the decimal point
+      const sanitizedValue = String(value).replace(/[^0-9.]/g, "");
+      finalValue = sanitizedValue === "" ? 0 : sanitizedValue;
+
       const subtotal = [...form.getValues("services"), ...form.getValues("ppfs"), ...form.getValues("accessories")].reduce((acc, curr) => acc + (curr.price || 0), 0) + Number(form.getValues("laborCharge") || 0);
       const afterDiscount = subtotal - Number(form.getValues("discount") || 0);
       const tax = afterDiscount * (Number(form.getValues("gst") || 18) / 100);
@@ -267,7 +271,7 @@ export default function AddJobPage() {
       const otherPaymentsTotal = payments.reduce((acc, p, i) => i === index ? acc : acc + Number(p.amount || 0), 0);
       const maxAllowed = totalEstimatedCost - otherPaymentsTotal;
       
-      if (Number(value) > maxAllowed) {
+      if (Number(finalValue) > maxAllowed) {
         finalValue = maxAllowed;
       }
     }
@@ -1426,8 +1430,9 @@ export default function AddJobPage() {
                         <div className="flex-1 min-w-[120px]">
                           <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase tracking-wider">Amount</label>
                           <Input
-                            type="number"
-                            value={payment.amount}
+                            type="text"
+                            inputMode="decimal"
+                            value={payment.amount === 0 ? "" : payment.amount}
                             onChange={(e) => handlePaymentChange(index, "amount", e.target.value)}
                             placeholder="0"
                             className="h-9 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"

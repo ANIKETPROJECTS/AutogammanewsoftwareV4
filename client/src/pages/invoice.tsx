@@ -244,6 +244,21 @@ export default function InvoicePage() {
   const [businessFilter, setBusinessFilter] = useState<string>("all");
   const [sortConfig, setSortConfig] = useState<{ key: keyof Invoice; direction: 'asc' | 'desc' } | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [showPaymentDialog, setShowViewPaymentDialog] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+
+  const updatePaymentMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string, data: any }) => {
+      await apiRequest("PATCH", `/api/invoices/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+      toast({ title: "Success", description: "Payment status updated" });
+      setShowViewPaymentDialog(false);
+    },
+  });
+
   const { phone: customerPhone } = useParams<{ phone: string }>();
   const [showViewDialog, setShowViewDialog] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
@@ -444,6 +459,19 @@ export default function InvoicePage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          {!inv.isPaid && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-green-600 border-green-200 hover:bg-green-50"
+                              onClick={() => {
+                                setSelectedInvoice(inv);
+                                setShowViewPaymentDialog(true);
+                              }}
+                            >
+                              Mark Paid
+                            </Button>
+                          )}
                           <Button 
                             size="icon" 
                             variant="ghost" 
@@ -505,6 +533,55 @@ export default function InvoicePage() {
             >
               <Printer className="h-4 w-4 mr-2" />
               Print Invoice
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPaymentDialog} onOpenChange={setShowViewPaymentDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mark Invoice as Paid</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-1">
+              <label className="text-sm font-bold">Payment Date</label>
+              <Input 
+                type="date" 
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-bold">Payment Method</label>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Cash">Cash</SelectItem>
+                  <SelectItem value="UPI / GPay">UPI / GPay</SelectItem>
+                  <SelectItem value="Card">Card</SelectItem>
+                  <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowViewPaymentDialog(false)}>Cancel</Button>
+            <Button 
+              className="bg-green-600 hover:bg-green-700 text-white"
+              onClick={() => {
+                if (selectedInvoice?.id) {
+                  updatePaymentMutation.mutate({
+                    id: selectedInvoice.id,
+                    data: { isPaid: true, paymentMethod, paymentDate }
+                  });
+                }
+              }}
+              disabled={updatePaymentMutation.isPending}
+            >
+              Confirm Payment
             </Button>
           </DialogFooter>
         </DialogContent>

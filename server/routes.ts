@@ -372,6 +372,19 @@ export async function registerRoutes(
     res.json(invoice);
   });
 
+  app.patch("/api/invoices/:id", async (req, res) => {
+    if (!(req.session as any).userId) {
+      return res.status(401).send("Unauthorized");
+    }
+    try {
+      const invoice = await storage.updateInvoice(req.params.id, req.body);
+      if (!invoice) return res.status(404).json({ message: "Invoice not found" });
+      res.json(invoice);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Invalid input" });
+    }
+  });
+
   app.delete("/api/invoices/:id", async (req, res) => {
     if (!(req.session as any).userId) {
       return res.status(401).send("Unauthorized");

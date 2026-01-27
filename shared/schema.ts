@@ -247,6 +247,9 @@ export const invoiceSchema = z.object({
   gstAmount: z.number(),
   totalAmount: z.number(),
   date: z.string(),
+  isPaid: z.boolean().default(false),
+  paymentMethod: z.string().optional(),
+  paymentDate: z.string().optional(),
 });
 
 export type Invoice = z.infer<typeof invoiceSchema>;

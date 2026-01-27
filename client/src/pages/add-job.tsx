@@ -81,6 +81,9 @@ export default function AddJobPage() {
   const [pendingFormData, setPendingFormData] = useState<JobCardFormValues | null>(null);
   const [businessAssignments, setBusinessAssignments] = useState<Record<string, "Auto Gamma" | "AGNX">>({});
   const [laborBusiness, setLaborBusiness] = useState<"Auto Gamma" | "AGNX">("Auto Gamma");
+  const [markAsPaid, setMarkAsPaid] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
 
   const form = useForm<JobCardFormValues>({
     resolver: zodResolver(jobCardSchema),
@@ -453,6 +456,9 @@ export default function AddJobPage() {
       laborBusiness: laborBusiness,
       discount: Number(pendingFormData.discount),
       gst: Number(pendingFormData.gst),
+      isPaid: markAsPaid,
+      paymentMethod: markAsPaid ? paymentMethod : undefined,
+      paymentDate: markAsPaid ? paymentDate : undefined,
     };
 
     console.log("Sending final formatted data with business assignments:", formattedData);

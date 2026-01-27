@@ -194,7 +194,10 @@ const invoiceMongoSchema = new mongoose.Schema({
   gstPercentage: { type: Number, default: 18 },
   gstAmount: { type: Number, required: true },
   totalAmount: { type: Number, required: true },
-  date: { type: String, required: true }
+  date: { type: String, required: true },
+  isPaid: { type: Boolean, default: false },
+  paymentMethod: { type: String },
+  paymentDate: { type: String }
 });
 
 export const InvoiceModel = mongoose.model("Invoice", invoiceMongoSchema);
@@ -227,6 +230,7 @@ export interface IStorage {
 
   getInvoices(): Promise<Invoice[]>;
   getInvoice(id: string): Promise<Invoice | undefined>;
+  updateInvoice(id: string, invoice: Partial<Invoice>): Promise<Invoice | undefined>;
   deleteInvoice(id: string): Promise<boolean>;
   getCustomers(): Promise<any[]>;
 
@@ -1345,10 +1349,30 @@ export class MongoStorage implements IStorage {
     return {
       ...obj,
       id: inv._id.toString(),
-      business: (inv as any).business as "Auto Gamma" | "AGNX",
+      items: (inv as any).items || [],
       discount: obj.discount ?? 0,
       laborCharge: obj.laborCharge ?? 0,
       gstPercentage: obj.gstPercentage ?? 18,
+      isPaid: obj.isPaid ?? false,
+      paymentMethod: obj.paymentMethod,
+      paymentDate: obj.paymentDate,
+    } as Invoice;
+  }
+
+  async updateInvoice(id: string, invoice: Partial<Invoice>): Promise<Invoice | undefined> {
+    const inv = await InvoiceModel.findByIdAndUpdate(id, invoice, { new: true });
+    if (!inv) return undefined;
+    const obj = inv.toObject();
+    return {
+      ...obj,
+      id: inv._id.toString(),
+      items: (inv as any).items || [],
+      discount: obj.discount ?? 0,
+      laborCharge: obj.laborCharge ?? 0,
+      gstPercentage: obj.gstPercentage ?? 18,
+      isPaid: obj.isPaid ?? false,
+      paymentMethod: obj.paymentMethod,
+      paymentDate: obj.paymentDate,
     } as Invoice;
   }
 

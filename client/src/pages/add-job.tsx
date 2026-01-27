@@ -1382,9 +1382,27 @@ export default function AddJobPage() {
                       (1 + form.watch("gst") / 100)
                     ).toLocaleString()}</span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase block leading-none mb-1">Total Paid</span>
-                    <span className="text-sm font-bold text-slate-700">₹{payments.reduce((acc, p) => acc + Number(p.amount || 0), 0).toLocaleString()}</span>
+                  <div className="flex gap-4">
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block leading-none mb-1">Total Paid</span>
+                      <span className="text-sm font-bold text-slate-700">₹{payments.reduce((acc, p) => acc + Number(p.amount || 0), 0).toLocaleString()}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block leading-none mb-1">Remaining</span>
+                      <span className={`text-sm font-bold ${
+                        Math.round(
+                          ([...form.watch("services"), ...form.watch("ppfs"), ...form.watch("accessories")].reduce((acc, curr) => acc + (curr.price || 0), 0) + 
+                          Number(form.watch("laborCharge") || 0) - 
+                          Number(form.watch("discount") || 0)) * 
+                          (1 + form.watch("gst") / 100)
+                        ) - payments.reduce((acc, p) => acc + Number(p.amount || 0), 0) > 0 ? "text-red-600" : "text-green-600"
+                      }`}>₹{Math.max(0, Math.round(
+                        ([...form.watch("services"), ...form.watch("ppfs"), ...form.watch("accessories")].reduce((acc, curr) => acc + (curr.price || 0), 0) + 
+                        Number(form.watch("laborCharge") || 0) - 
+                        Number(form.watch("discount") || 0)) * 
+                        (1 + form.watch("gst") / 100)
+                      ) - payments.reduce((acc, p) => acc + Number(p.amount || 0), 0)).toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
 

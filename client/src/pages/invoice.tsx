@@ -779,8 +779,16 @@ export default function InvoicePage() {
                 type="number" 
                 placeholder="Enter amount"
                 value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                className="font-bold text-lg"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const remaining = selectedInvoice ? (selectedInvoice.totalAmount - (selectedInvoice.payments?.reduce((acc, p) => acc + (p.amount || 0), 0) || 0)) : 0;
+                  if (Number(val) > remaining) {
+                    setPaymentAmount(remaining.toString());
+                  } else {
+                    setPaymentAmount(val);
+                  }
+                }}
+                className="font-bold text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
 

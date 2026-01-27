@@ -778,7 +778,7 @@ export default function InvoicePage() {
         setShowViewPaymentDialog(open);
         if (!open) resetPaymentDialog();
       }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>Mark Invoice as Paid</DialogTitle>
           </DialogHeader>

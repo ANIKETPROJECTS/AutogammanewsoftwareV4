@@ -77,6 +77,14 @@ export default function AddJobPage() {
   const [, setLocation] = useLocation();
   const searchParams = new URLSearchParams(useSearch());
   const jobId = searchParams.get("id");
+  const form = useForm<JobCardFormValues>({
+    resolver: zodResolver(jobCardSchema),
+    defaultValues: {
+      customerName: "",
+      phoneNumber: "",
+      emailAddress: "",
+      referralSource: "",
+      referrerName: "",
       referrerPhone: "",
       make: "",
       model: "",
@@ -222,8 +230,10 @@ export default function AddJobPage() {
   const [selectedPPFVehicleType, setSelectedPPFVehicleType] = useState("");
   const [selectedWarranty, setSelectedWarranty] = useState("");
   const [rollQty, setRollQty] = useState(0);
-  const [selectedAccessoryCategory, setSelectedAccessoryCategory] = useState("");
   const [selectedAccessory, setSelectedAccessory] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
+  const [markAsPaid, setMarkAsPaid] = useState(false);
   const [businessAssignments, setBusinessAssignments] = useState<Record<string, string>>({});
 
   const handleAddService = () => {
@@ -242,9 +252,10 @@ export default function AddJobPage() {
 
     const vehiclePricing = s?.pricingByVehicleType.find(p => p.vehicleType === vehicleType);
     
-  const [paymentMethod, setPaymentMethod] = useState("Cash");
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
-  const [markAsPaid, setMarkAsPaid] = useState(false);
+    if (s) {
+      appendService({ 
+        serviceId: s.id!, 
+        name: `${s.name} (${vehicleType})`,
         price: vehiclePricing?.price || 0,
         technician: tech?.name
       } as any);
@@ -440,12 +451,10 @@ export default function AddJobPage() {
       laborBusiness: laborBusiness,
       discount: Number(pendingFormData.discount),
       gst: Number(pendingFormData.gst),
-      isPaid: markAsPaid, paymentMethod: markAsPaid ? paymentMethod : undefined, paymentDate: markAsPaid ? paymentDate : undefined,
+      isPaid: markAsPaid,
       paymentMethod: markAsPaid ? paymentMethod : undefined,
       paymentDate: markAsPaid ? paymentDate : undefined,
     };
-
-    console.log("Sending final formatted data with business assignments:", formattedData);
     createJobMutation.mutate(formattedData);
     setShowBusinessDialog(false);
   };

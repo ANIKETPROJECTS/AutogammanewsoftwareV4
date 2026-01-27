@@ -223,6 +223,7 @@ Auto Gamma Car Care Studio`;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/inquiries"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       setIsFormOpen(false);
       form.reset();
       toast({ title: "Inquiry saved successfully" });
@@ -235,6 +236,7 @@ Auto Gamma Car Care Studio`;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/inquiries"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       toast({ title: "Inquiry deleted" });
     },
   });

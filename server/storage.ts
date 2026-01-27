@@ -129,7 +129,8 @@ const inquiryMongoSchema = new mongoose.Schema({
   customerPrice: { type: Number, default: 0 },
   date: { type: String, required: true },
   inquiryId: { type: String, required: true },
-  isConverted: { type: Boolean, default: false }
+  isConverted: { type: Boolean, default: false },
+  createdAt: { type: String }
 });
 
 export const InquiryModel = mongoose.model("Inquiry", inquiryMongoSchema);

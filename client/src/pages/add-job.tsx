@@ -29,6 +29,8 @@ import { api } from "@shared/routes";
 import { useState, useEffect } from "react";
 import { 
   ChevronLeft, 
+  ChevronDown,
+  ChevronRight,
   User, 
   Car, 
   Settings, 
@@ -233,6 +235,9 @@ export default function AddJobPage() {
   const [selectedAccessoryCategory, setSelectedAccessoryCategory] = useState("");
   const [selectedAccessory, setSelectedAccessory] = useState("");
   const [showBusinessDialog, setShowBusinessDialog] = useState(false);
+  const [servicesExpanded, setServicesExpanded] = useState(false);
+  const [ppfExpanded, setPpfExpanded] = useState(false);
+  const [accessoriesExpanded, setAccessoriesExpanded] = useState(false);
   const [laborBusiness, setLaborBusiness] = useState<string>("Auto Gamma");
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
@@ -765,12 +770,27 @@ export default function AddJobPage() {
 
             {/* Service Section */}
             <Card className="border-slate-200">
-              <CardHeader className="border-b bg-slate-50/50 py-4 px-6">
-                <div className="flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-red-600" />
-                  <CardTitle className="text-lg font-bold">Services</CardTitle>
+              <CardHeader 
+                className="border-b bg-slate-50/50 py-4 px-6 cursor-pointer hover:bg-slate-100/50 transition-colors"
+                onClick={() => setServicesExpanded(!servicesExpanded)}
+                data-testid="section-services-header"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Settings className="h-5 w-5 text-red-600" />
+                    <CardTitle className="text-lg font-bold">Services</CardTitle>
+                    {serviceFields.length > 0 && (
+                      <span className="text-sm text-muted-foreground">({serviceFields.length} added)</span>
+                    )}
+                  </div>
+                  {servicesExpanded ? (
+                    <ChevronDown className="h-5 w-5 text-slate-500" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-slate-500" />
+                  )}
                 </div>
               </CardHeader>
+              {servicesExpanded && (
               <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                   <div className="md:col-span-5 space-y-1.5">
@@ -822,16 +842,32 @@ export default function AddJobPage() {
                   </div>
                 )}
               </CardContent>
+              )}
             </Card>
 
             {/* PPF Section */}
             <Card className="border-slate-200">
-              <CardHeader className="border-b bg-slate-50/50 py-4 px-6">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-red-600" />
-                  <CardTitle className="text-lg font-bold">PPF (Paint Protection Film)</CardTitle>
+              <CardHeader 
+                className="border-b bg-slate-50/50 py-4 px-6 cursor-pointer hover:bg-slate-100/50 transition-colors"
+                onClick={() => setPpfExpanded(!ppfExpanded)}
+                data-testid="section-ppf-header"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-red-600" />
+                    <CardTitle className="text-lg font-bold">PPF (Paint Protection Film)</CardTitle>
+                    {ppfFields.length > 0 && (
+                      <span className="text-sm text-muted-foreground">({ppfFields.length} added)</span>
+                    )}
+                  </div>
+                  {ppfExpanded ? (
+                    <ChevronDown className="h-5 w-5 text-slate-500" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-slate-500" />
+                  )}
                 </div>
               </CardHeader>
+              {ppfExpanded && (
               <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                   <div className="md:col-span-3 space-y-1.5">
@@ -920,16 +956,32 @@ export default function AddJobPage() {
                   </div>
                 )}
               </CardContent>
+              )}
             </Card>
 
             {/* Accessories Section */}
             <Card className="border-slate-200">
-              <CardHeader className="border-b bg-slate-50/50 py-4 px-6">
-                <div className="flex items-center gap-2">
-                  <Package className="h-5 w-5 text-red-600" />
-                  <CardTitle className="text-lg font-bold">Accessories</CardTitle>
+              <CardHeader 
+                className="border-b bg-slate-50/50 py-4 px-6 cursor-pointer hover:bg-slate-100/50 transition-colors"
+                onClick={() => setAccessoriesExpanded(!accessoriesExpanded)}
+                data-testid="section-accessories-header"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-5 w-5 text-red-600" />
+                    <CardTitle className="text-lg font-bold">Accessories</CardTitle>
+                    {accessoryFields.length > 0 && (
+                      <span className="text-sm text-muted-foreground">({accessoryFields.length} added)</span>
+                    )}
+                  </div>
+                  {accessoriesExpanded ? (
+                    <ChevronDown className="h-5 w-5 text-slate-500" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-slate-500" />
+                  )}
                 </div>
               </CardHeader>
+              {accessoriesExpanded && (
               <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                   <div className="md:col-span-5 space-y-1.5">
@@ -980,6 +1032,7 @@ export default function AddJobPage() {
                   </div>
                 )}
               </CardContent>
+              )}
             </Card>
 
             {/* Charges and Notes Section */}

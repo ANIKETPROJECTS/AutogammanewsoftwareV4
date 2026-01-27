@@ -497,8 +497,6 @@ export default function AddJobPage() {
       laborBusiness: laborBusiness,
       discount: Number(pendingFormData.discount),
       gst: Number(pendingFormData.gst),
-      isPaid: markAsPaid,
-      payments: markAsPaid ? payments.map((p: any) => ({ ...p, amount: Number(p.amount) })) : [],
     };
     createJobMutation.mutate(formattedData);
     setShowBusinessDialog(false);

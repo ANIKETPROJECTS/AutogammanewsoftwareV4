@@ -332,58 +332,67 @@ export class MongoStorage implements IStorage {
 
   async getDashboardData(): Promise<DashboardData> {
     const inquiries = await InquiryModel.find();
-    const customers = await JobCardModel.find(); 
-    const activeJobs = await JobCardModel.countDocuments({ status: { $in: ["Pending", "In Progress"] } });
+    const jobCards = await JobCardModel.find(); 
+    const activeJobsList = await JobCardModel.find({ status: { $in: ["Pending", "In Progress"] } }).limit(5);
     
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
+    
     const todayInvoices = await InvoiceModel.find({ 
       date: { $gte: startOfToday.toISOString() } 
     });
     const todaySales = todayInvoices.reduce((acc, inv) => acc + inv.totalAmount, 0);
     
-    // Calculate inquiries today
     const inquiriesToday = await InquiryModel.countDocuments({
       date: { $gte: startOfToday.toISOString() }
     });
 
-    // Count unique customers
     const uniquePhones = new Set([
       ...inquiries.map(i => i.phone),
-      ...customers.map(c => c.phoneNumber)
+      ...jobCards.map(c => c.phoneNumber)
     ]);
+
+    // Simple weekly sales trends (last 7 days)
+    const salesTrends = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+      salesTrends.push({ name: dayName, value: 0 });
+    }
 
     return {
       stats: [
-        { label: "TODAY'S SALES", value: `₹${todaySales.toLocaleString()}`, subtext: "Total sales generated today", icon: "IndianRupee" },
-        { label: "ACTIVE SERVICE JOBS", value: activeJobs.toString(), subtext: "Service jobs in progress", icon: "Box" },
-        { label: "INQUIRIES TODAY", value: inquiriesToday.toString(), subtext: "Inquiries received today", icon: "MessageSquare" },
-        { label: "TOTAL CUSTOMERS", value: uniquePhones.size.toString(), subtext: "Registered customers", icon: "Users" },
+        { label: "Today's Sales", value: todaySales.toLocaleString(), subtext: "Total sales generated today", icon: "IndianRupee" },
+        { label: "Active Service Jobs", value: activeJobsList.length.toString(), subtext: "Service jobs in progress", icon: "Wrench" },
+        { label: "Inquiries Today", value: inquiriesToday.toString(), subtext: "Inquiries received today", icon: "MessageCircle" },
+        { label: "Total Customers", value: uniquePhones.size.toString(), subtext: "Registered customers", icon: "Users" },
       ],
-      salesTrends: [
-        { name: "Fri", value: 0 },
-        { name: "Sat", value: 0 },
-        { name: "Sun", value: 0 },
-        { name: "Mon", value: 0 },
-        { name: "Tue", value: 0 },
-        { name: "Wed", value: 0 },
-        { name: "Thu", value: 0 },
-      ],
+      salesTrends,
       customerStatus: [
-        { name: "New Lead", value: 1 },
-        { name: "Completed", value: 2 },
+        { name: "New Lead", value: inquiries.filter(i => i.status === "NEW").length },
+        { name: "Completed", value: jobCards.filter(j => j.status === "Completed").length },
       ],
       customerGrowth: [
-        { name: "Week 1", value: 1 },
-        { name: "Week 2", value: 1.5 },
-        { name: "Week 3", value: 1.2 },
-        { name: "Week 4", value: 2.5 },
+        { name: "Aug", value: 0 },
+        { name: "Sep", value: 0 },
+        { name: "Oct", value: 0 },
+        { name: "Nov", value: 0 },
+        { name: "Dec", value: 0 },
+        { name: "Jan", value: uniquePhones.size },
       ],
       inventoryByCategory: [
-        { name: "Elite", value: 40 },
-        { name: "Garware Plus", value: 30 },
-        { name: "Garware Premium", value: 20 },
+        { name: "Elite", value: 4 },
+        { name: "Garware Plus", value: 7 },
+        { name: "Garware Premium", value: 5 },
+        { name: "Garware Matt", value: 3 },
       ],
+      activeJobs: activeJobsList.map(j => ({
+        id: j._id.toString(),
+        customerName: j.customerName,
+        vehicleInfo: `${j.make} ${j.model}`,
+        status: j.status,
+      })),
     };
   }
 

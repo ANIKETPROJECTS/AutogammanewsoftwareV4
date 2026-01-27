@@ -44,6 +44,12 @@ export const dashboardDataSchema = z.object({
   customerStatus: z.array(chartDataSchema),
   customerGrowth: z.array(chartDataSchema),
   inventoryByCategory: z.array(chartDataSchema),
+  activeJobs: z.array(z.object({
+    id: z.string(),
+    customerName: z.string(),
+    vehicleInfo: z.string(),
+    status: z.string(),
+  })).default([]),
 });
 
 export type DashboardData = z.infer<typeof dashboardDataSchema>;

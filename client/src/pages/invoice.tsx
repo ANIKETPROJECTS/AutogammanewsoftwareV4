@@ -121,6 +121,18 @@ function PrintableInvoice({ invoice }: { invoice: Invoice }) {
           <p className="text-xl font-bold text-slate-900">{invoice.customerName}</p>
           <p className="text-slate-600">{invoice.phoneNumber}</p>
           {invoice.emailAddress && <p className="text-slate-600">{invoice.emailAddress}</p>}
+          {invoice.isPaid && (
+            <div className="mt-4 pt-4 border-t border-slate-200">
+              <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Payment Status</p>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge className="bg-green-600 text-white">PAID</Badge>
+                <span className="text-sm font-medium text-slate-700">
+                  {invoice.paymentDate && format(new Date(invoice.paymentDate), "dd MMM yyyy")}
+                  {invoice.paymentMethod && ` via ${invoice.paymentMethod}`}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
         <div className="text-right space-y-2">
           <p className="text-xs font-bold text-red-600 uppercase tracking-widest">Vehicle Details</p>
@@ -250,7 +262,10 @@ export default function InvoicePage() {
 
   const updatePaymentMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string, data: any }) => {
-      await apiRequest("PATCH", `/api/invoices/${id}`, data);
+      await apiRequest("PATCH", `/api/invoices/${id}`, {
+        ...data,
+        isPaid: true
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
@@ -433,13 +448,14 @@ export default function InvoicePage() {
                       Total Amount <ArrowUpDown className="h-3 w-3" />
                     </div>
                   </TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredInvoices.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       No invoices found matching your criteria
                     </TableCell>
                   </TableRow>
@@ -456,6 +472,19 @@ export default function InvoicePage() {
                       <TableCell>{format(new Date(inv.date || new Date()), "dd MMM yyyy")}</TableCell>
                       <TableCell className="text-right font-bold text-red-600">
                         ₹{inv.totalAmount.toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        {inv.isPaid ? (
+                          <div className="space-y-1">
+                            <Badge className="bg-green-600 text-white hover:bg-green-700">Paid</Badge>
+                            <div className="text-[10px] text-slate-500">
+                              {inv.paymentDate && format(new Date(inv.paymentDate), "dd MMM yyyy")}
+                              {inv.paymentMethod && ` • ${inv.paymentMethod}`}
+                            </div>
+                          </div>
+                        ) : (
+                          <Badge variant="outline" className="text-slate-500">Unpaid</Badge>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">

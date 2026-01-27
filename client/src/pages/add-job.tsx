@@ -1226,7 +1226,7 @@ export default function AddJobPage() {
         </Form>
 
         <Dialog open={showBusinessDialog} onOpenChange={setShowBusinessDialog}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold">Complete Service - Assign Business</DialogTitle>
               <p className="text-sm text-muted-foreground mt-2">
@@ -1364,17 +1364,7 @@ export default function AddJobPage() {
                     
                     {payments.map((payment, index) => (
                       <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-slate-50 p-3 rounded-md relative group">
-                        <div>
-                          <label className="text-xs font-semibold text-slate-500 mb-1 block uppercase">Amount</label>
-                          <Input
-                            type="number"
-                            value={payment.amount}
-                            onChange={(e) => handlePaymentChange(index, "amount", e.target.value)}
-                            placeholder="0"
-                            className="h-9"
-                          />
-                        </div>
-                        <div>
+                        <div className="md:col-span-4">
                           <label className="text-xs font-semibold text-slate-500 mb-1 block uppercase">Method</label>
                           <Select 
                             value={payment.method} 
@@ -1391,7 +1381,7 @@ export default function AddJobPage() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div>
+                        <div className="md:col-span-4">
                           <label className="text-xs font-semibold text-slate-500 mb-1 block uppercase">Date</label>
                           <Input
                             type="date"
@@ -1400,7 +1390,17 @@ export default function AddJobPage() {
                             className="h-9"
                           />
                         </div>
-                        <div className="flex justify-end">
+                        <div className="md:col-span-3">
+                          <label className="text-xs font-semibold text-slate-500 mb-1 block uppercase">Amount</label>
+                          <Input
+                            type="number"
+                            value={payment.amount}
+                            onChange={(e) => handlePaymentChange(index, "amount", e.target.value)}
+                            placeholder="0"
+                            className="h-9 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                        </div>
+                        <div className="md:col-span-1 flex justify-end">
                           {payments.length > 1 && (
                             <Button
                               type="button"

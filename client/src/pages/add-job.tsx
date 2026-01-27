@@ -369,7 +369,7 @@ export default function AddJobPage() {
         title: "Success",
         description: `Job card ${jobId ? "updated" : "created"} successfully`,
       });
-      setLocation("/job-cards");
+      setLocation("/invoice");
     },
     onError: (error: any) => {
       console.error("Mutation error", error);

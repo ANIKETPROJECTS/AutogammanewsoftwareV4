@@ -345,66 +345,37 @@ export class MongoStorage implements IStorage {
 
   async getDashboardData(): Promise<DashboardData> {
     const inquiries = await InquiryModel.find();
-    const jobCards = await JobCardModel.find(); 
-    const activeJobsList = await JobCardModel.find({ status: { $in: ["Pending", "In Progress"] } }).limit(5);
-    
+    const jobCards = await JobCardModel.find();
+    const invoices = await InvoiceModel.find();
+    const tickets = await TicketModel.find();
+
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
-    
-    const todayInvoices = await InvoiceModel.find({ 
-      date: { $gte: startOfToday.toISOString() } 
-    });
-    const todaySales = todayInvoices.reduce((acc, inv) => acc + inv.totalAmount, 0);
-    
+
     const inquiriesToday = await InquiryModel.countDocuments({
-      date: { $gte: startOfToday.toISOString() }
+      createdAt: { $gte: startOfToday.toISOString() }
     });
 
-    const uniquePhones = new Set([
-      ...inquiries.map(i => i.phone),
-      ...jobCards.map(c => c.phoneNumber)
-    ]);
-
-    // Simple weekly sales trends (last 7 days)
-    const salesTrends = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
-      salesTrends.push({ name: dayName, value: 0 });
-    }
+    // Calculate total balance from all invoices (partial + unpaid)
+    const totalBalance = invoices.reduce((acc, inv) => {
+      const paidAmount = (inv.payments || []).reduce((sum, p) => sum + p.amount, 0);
+      return acc + (inv.totalAmount - paidAmount);
+    }, 0);
 
     return {
       stats: [
-        { label: "Today's Sales", value: todaySales.toLocaleString(), subtext: "Total sales generated today", icon: "IndianRupee" },
-        { label: "Active Service Jobs", value: activeJobsList.length.toString(), subtext: "Service jobs in progress", icon: "Wrench" },
         { label: "Inquiries Today", value: inquiriesToday.toString(), subtext: "Inquiries received today", icon: "MessageCircle" },
-        { label: "Total Customers", value: uniquePhones.size.toString(), subtext: "Registered customers", icon: "Users" },
+        { label: "Balance Amount", value: totalBalance.toLocaleString(), subtext: "Unpaid + Partial balances", icon: "IndianRupee" },
       ],
-      salesTrends,
-      customerStatus: [
-        { name: "New Lead", value: inquiries.filter(i => i.status === "NEW").length },
-        { name: "Completed", value: jobCards.filter(j => j.status === "Completed").length },
-      ],
-      customerGrowth: [
-        { name: "Aug", value: 0 },
-        { name: "Sep", value: 0 },
-        { name: "Oct", value: 0 },
-        { name: "Nov", value: 0 },
-        { name: "Dec", value: 0 },
-        { name: "Jan", value: uniquePhones.size },
-      ],
-      inventoryByCategory: [
-        { name: "Elite", value: 4 },
-        { name: "Garware Plus", value: 7 },
-        { name: "Garware Premium", value: 5 },
-        { name: "Garware Matt", value: 3 },
-      ],
-      activeJobs: activeJobsList.map(j => ({
-        id: j._id.toString(),
-        customerName: j.customerName,
-        vehicleInfo: `${j.make} ${j.model}`,
-        status: j.status,
+      salesTrends: [],
+      customerStatus: [],
+      customerGrowth: [],
+      inventoryByCategory: [],
+      activeJobs: tickets.map(t => ({
+        id: t._id.toString(),
+        customerName: t.customerName,
+        vehicleInfo: t.note,
+        status: "Open",
       })),
     };
   }

@@ -40,10 +40,8 @@ export default function DashboardPage() {
 
   const getIcon = (key: string) => {
     switch (key) {
-      case "Today's Sales": return <IndianRupee className="h-6 w-6" />;
-      case "Active Service Jobs": return <Wrench className="h-6 w-6" />;
+      case "Balance Amount": return <IndianRupee className="h-6 w-6" />;
       case "Inquiries Today": return <MessageCircle className="h-6 w-6" />;
-      case "Total Customers": return <Users className="h-6 w-6" />;
       default: return <Activity className="h-6 w-6" />;
     }
   };
@@ -62,7 +60,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {data?.stats.map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -72,7 +70,7 @@ export default function DashboardPage() {
             >
               <StatCard 
                 label={stat.label}
-                value={stat.label.includes("Sales") ? `₹${stat.value}` : stat.value}
+                value={stat.label.includes("Amount") ? `₹${stat.value}` : stat.value}
                 subtext={stat.subtext}
                 icon={getIcon(stat.label)}
               />
@@ -80,127 +78,11 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* Charts Section 1 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="border-none shadow-sm overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b py-3 px-6 flex flex-row items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-blue-600" />
-              <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">Sales Trends</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data?.salesTrends}>
-                    <defs>
-                      <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#888', fontSize: 12}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#888', fontSize: 12}} />
-                    <Tooltip 
-                      formatter={(value) => [`₹${value}`, 'Sales']}
-                      contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}
-                    />
-                    <Area type="monotone" dataKey="value" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-sm overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b py-3 px-6 flex flex-row items-center gap-2">
-              <Activity className="h-4 w-4 text-red-600" />
-              <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">Customer Status</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="h-[300px] w-full flex flex-col items-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={data?.customerStatus}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {data?.customerStatus.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend 
-                      verticalAlign="bottom" 
-                      align="center"
-                      iconType="circle"
-                      formatter={(value, entry: any) => (
-                        <span className="text-xs font-medium text-slate-600">
-                          {value}: {entry.payload.value}
-                        </span>
-                      )}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts Section 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="border-none shadow-sm overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b py-3 px-6 flex flex-row items-center gap-2">
-              <Users className="h-4 w-4 text-green-600" />
-              <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">Customer Growth</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="h-[250px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data?.customerGrowth}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                    <YAxis axisLine={false} tickLine={false} />
-                    <Tooltip 
-                      contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}
-                    />
-                    <Area type="monotone" dataKey="value" stroke="#10B981" strokeWidth={2} fill="#DCFCE7" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-sm overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b py-3 px-6 flex flex-row items-center gap-2">
-              <Box className="h-4 w-4 text-orange-600" />
-              <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">Inventory by Category</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="h-[250px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data?.inventoryByCategory} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#eee" />
-                    <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" width={100} axisLine={false} tickLine={false} tick={{fontSize: 12}} />
-                    <Tooltip cursor={{fill: 'transparent'}} />
-                    <Bar dataKey="value" fill="#F59E0B" radius={[0, 4, 4, 0]} barSize={20} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Active Jobs Section */}
+        {/* Tickets Section */}
         <Card className="border-none shadow-sm overflow-hidden">
           <CardHeader className="bg-slate-50/50 border-b py-3 px-6 flex flex-row items-center gap-2">
             <History className="h-4 w-4 text-red-600" />
-            <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">Active Jobs</CardTitle>
+            <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">Tickets</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y">
@@ -218,7 +100,7 @@ export default function DashboardPage() {
                 ))
               ) : (
                 <div className="p-8 text-center text-muted-foreground">
-                  No active service jobs currently.
+                  No tickets currently.
                 </div>
               )}
             </div>

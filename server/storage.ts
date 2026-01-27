@@ -809,7 +809,9 @@ export class MongoStorage implements IStorage {
           gstPercentage: jobCard.gst,
           gstAmount,
           totalAmount,
-          date: new Date().toISOString()
+          date: new Date().toISOString(),
+          isPaid: (jobCard as any).isPaid || false,
+          payments: (jobCard as any).payments || []
         });
         await inv.save();
       }

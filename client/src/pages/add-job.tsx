@@ -232,10 +232,13 @@ export default function AddJobPage() {
   const [rollQty, setRollQty] = useState(0);
   const [selectedAccessoryCategory, setSelectedAccessoryCategory] = useState("");
   const [selectedAccessory, setSelectedAccessory] = useState("");
+  const [showBusinessDialog, setShowBusinessDialog] = useState(false);
+  const [laborBusiness, setLaborBusiness] = useState<string>("Auto Gamma");
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
   const [markAsPaid, setMarkAsPaid] = useState(false);
   const [businessAssignments, setBusinessAssignments] = useState<Record<string, string>>({});
+  const [pendingFormData, setPendingFormData] = useState<any>(null);
 
   const handleAddService = () => {
     const s = services.find(item => item.id === selectedService);

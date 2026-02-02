@@ -81,9 +81,11 @@ export default function AddJobPage() {
   const jobId = searchParams.get("id");
   const prefillPhone = searchParams.get("phone");
 
-  const { data: jobCards = [] } = useQuery<JobCard[]>({
+  const { data: jobCards = [], isFetched: isJobCardsFetched } = useQuery<JobCard[]>({
     queryKey: ["/api/job-cards"],
   });
+
+  const [hasPrefilled, setHasPrefilled] = useState(false);
 
   const form = useForm<JobCardFormValues>({
     resolver: zodResolver(jobCardSchema),
@@ -111,24 +113,37 @@ export default function AddJobPage() {
 
   // Prefill customer information if phone is provided in URL
   useEffect(() => {
-    if (prefillPhone && !jobId && jobCards.length > 0) {
+    if (prefillPhone && !jobId && isJobCardsFetched && !hasPrefilled) {
       const existingJob = jobCards.find(j => j.phoneNumber === prefillPhone);
       if (existingJob) {
         form.reset({
-          ...form.getValues(),
           customerName: existingJob.customerName,
           phoneNumber: existingJob.phoneNumber,
           emailAddress: existingJob.emailAddress || "",
           referralSource: existingJob.referralSource,
           referrerName: existingJob.referrerName || "",
           referrerPhone: existingJob.referrerPhone || "",
+          make: "",
+          model: "",
+          year: "",
+          licensePlate: "",
+          vehicleType: "",
+          services: [],
+          ppfs: [],
+          accessories: [],
+          laborCharge: 0,
+          discount: 0,
+          gst: 18,
+          serviceNotes: "",
         });
+        setHasPrefilled(true);
       } else {
         // If no job card exists, we might want to still prefill the phone number
         form.setValue("phoneNumber", prefillPhone);
+        setHasPrefilled(true);
       }
     }
-  }, [prefillPhone, jobId, jobCards, form]);
+  }, [prefillPhone, jobId, jobCards, isJobCardsFetched, hasPrefilled, form]);
 
   const { data: jobToEdit, isLoading: isLoadingJob, refetch: refetchJob } = useQuery<JobCard>({
     queryKey: ["/api/job-cards", jobId],
@@ -197,8 +212,9 @@ export default function AddJobPage() {
         gst: jobToEdit.gst || 18,
         serviceNotes: jobToEdit.serviceNotes || "",
       });
-    } else if (!jobId) {
-      console.log("No jobId - Clearing form for new job card");
+    } else if (!jobId && !prefillPhone) {
+      // Only clear form if there's no prefillPhone (prefillPhone is handled by its own useEffect)
+      console.log("No jobId and no prefillPhone - Clearing form for new job card");
       form.reset({
         customerName: "",
         phoneNumber: "",
@@ -220,7 +236,7 @@ export default function AddJobPage() {
         serviceNotes: "",
       });
     }
-  }, [jobToEdit, jobId, form.reset]);
+  }, [jobToEdit, jobId, prefillPhone, form.reset]);
 
   const { fields: serviceFields, append: appendService, remove: removeService } = useFieldArray({
     control: form.control,

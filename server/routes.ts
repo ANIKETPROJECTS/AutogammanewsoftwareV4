@@ -399,6 +399,16 @@ export async function registerRoutes(
     res.json(job);
   });
 
+  app.post("/api/debug/reset-balances", async (req, res) => {
+    if (!(req.session as any).userId) return res.sendStatus(401);
+    try {
+      await mongoose.model("Invoice").updateMany({}, { $set: { payments: [], isPaid: false } });
+      res.json({ message: "All balances reset to zero (payments cleared)" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.patch("/api/job-cards/:id", async (req, res) => {
     try {
       console.log("Updating job card:", req.params.id, req.body);

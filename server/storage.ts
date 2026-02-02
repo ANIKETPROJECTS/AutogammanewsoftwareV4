@@ -360,7 +360,8 @@ export class MongoStorage implements IStorage {
     // Calculate total balance from all invoices (partial + unpaid)
     const totalBalance = invoices.reduce((acc, inv) => {
       const paidAmount = (inv.payments || []).reduce((sum, p) => sum + p.amount, 0);
-      return acc + (inv.totalAmount - paidAmount);
+      const balance = inv.totalAmount - paidAmount;
+      return acc + (balance > 0 ? balance : 0);
     }, 0);
 
     const upcomingAppointments = await AppointmentModel.find({

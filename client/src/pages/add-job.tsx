@@ -83,7 +83,6 @@ export default function AddJobPage() {
 
   const { data: jobCards = [] } = useQuery<JobCard[]>({
     queryKey: ["/api/job-cards"],
-    enabled: !!prefillPhone && !jobId,
   });
 
   const form = useForm<JobCardFormValues>({
@@ -506,17 +505,17 @@ export default function AddJobPage() {
 
     const formattedData = {
       ...pendingFormData,
-      services: (pendingFormData.services || []).map((s, i) => ({ 
+      services: (pendingFormData.services || []).map((s: any, i: number) => ({ 
         ...s, 
         price: Number(s.price),
         business: businessAssignments[`service-${i}`] || "Auto Gamma"
       })),
-      ppfs: (pendingFormData.ppfs || []).map((p, i) => ({ 
+      ppfs: (pendingFormData.ppfs || []).map((p: any, i: number) => ({ 
         ...p, 
         price: Number(p.price),
         business: businessAssignments[`ppf-${i}`] || "Auto Gamma"
       })),
-      accessories: (pendingFormData.accessories || []).map((a, i) => ({ 
+      accessories: (pendingFormData.accessories || []).map((a: any, i: number) => ({ 
         ...a, 
         price: Number(a.price),
         business: businessAssignments[`accessory-${i}`] || "Auto Gamma"

@@ -33,9 +33,8 @@ export default function LoginPage() {
         <img 
           src={loginBgImage}
           alt="Auto Gamma Storefront"
-          className="w-full h-full object-cover opacity-40"
+          className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
       </div>
 
       <motion.div 

@@ -79,6 +79,13 @@ export default function AddJobPage() {
   const [, setLocation] = useLocation();
   const searchParams = new URLSearchParams(useSearch());
   const jobId = searchParams.get("id");
+  const prefillPhone = searchParams.get("phone");
+
+  const { data: jobCards = [] } = useQuery<JobCard[]>({
+    queryKey: ["/api/job-cards"],
+    enabled: !!prefillPhone && !jobId,
+  });
+
   const form = useForm<JobCardFormValues>({
     resolver: zodResolver(jobCardSchema),
     defaultValues: {
@@ -102,6 +109,27 @@ export default function AddJobPage() {
       serviceNotes: "",
     },
   });
+
+  // Prefill customer information if phone is provided in URL
+  useEffect(() => {
+    if (prefillPhone && !jobId && jobCards.length > 0) {
+      const existingJob = jobCards.find(j => j.phoneNumber === prefillPhone);
+      if (existingJob) {
+        form.reset({
+          ...form.getValues(),
+          customerName: existingJob.customerName,
+          phoneNumber: existingJob.phoneNumber,
+          emailAddress: existingJob.emailAddress || "",
+          referralSource: existingJob.referralSource,
+          referrerName: existingJob.referrerName || "",
+          referrerPhone: existingJob.referrerPhone || "",
+        });
+      } else {
+        // If no job card exists, we might want to still prefill the phone number
+        form.setValue("phoneNumber", prefillPhone);
+      }
+    }
+  }, [prefillPhone, jobId, jobCards, form]);
 
   const { data: jobToEdit, isLoading: isLoadingJob, refetch: refetchJob } = useQuery<JobCard>({
     queryKey: ["/api/job-cards", jobId],

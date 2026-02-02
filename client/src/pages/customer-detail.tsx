@@ -147,7 +147,7 @@ export default function CustomerDetailPage() {
               </div>
             </div>
           </div>
-          <Button onClick={() => setLocation("/add-job")}>
+          <Button onClick={() => setLocation(`/add-job?phone=${encodeURIComponent(customerData.phone)}`)}>
             <Plus className="h-4 w-4 mr-2" />
             New Job
           </Button>

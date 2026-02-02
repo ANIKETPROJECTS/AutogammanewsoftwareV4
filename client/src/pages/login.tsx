@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginUser } from "@shared/schema";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { motion } from "framer-motion";
+import loginBgImage from "@assets/2024-01-28_1770050818566.png";
 
 export default function LoginPage() {
   const { login, isLoggingIn } = useAuth();
@@ -29,10 +30,9 @@ export default function LoginPage() {
     <div className="min-h-screen w-full flex items-center justify-center relative bg-black/90 overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
-        {/* Using a mechanic garage image from unsplash */}
         <img 
-          src="https://images.unsplash.com/photo-1625047509248-ec889cbff17f?q=80&w=2574&auto=format&fit=crop"
-          alt="Auto Workshop Background"
+          src={loginBgImage}
+          alt="Auto Gamma Storefront"
           className="w-full h-full object-cover opacity-40"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />

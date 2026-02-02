@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import logoImage from "@assets/logoAutogamma_1770051594473.png";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -37,14 +38,12 @@ export function Sidebar() {
   return (
     <div className="h-screen w-64 bg-white border-r border-border flex flex-col fixed left-0 top-0 overflow-y-auto z-50">
       <div className="p-6 border-b border-border/50">
-        <div className="flex items-center gap-2">
-          {/* Logo Placeholder */}
-          <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">
-            A
-          </div>
-          <span className="font-display font-bold text-xl tracking-tight text-foreground">
-            Auto<span className="text-primary">Gamma</span>
-          </span>
+        <div className="flex items-center justify-center">
+          <img 
+            src={logoImage}
+            alt="Auto Gamma Logo"
+            className="h-10 w-auto"
+          />
         </div>
       </div>
 

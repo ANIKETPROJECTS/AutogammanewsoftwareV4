@@ -10,6 +10,7 @@ import { loginSchema, LoginUser } from "@shared/schema";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { motion } from "framer-motion";
 import loginBgImage from "@assets/2024-01-28_1770050818566.png";
+import logoImage from "@assets/logoAutogamma_1770051594473.png";
 
 export default function LoginPage() {
   const { login, isLoggingIn } = useAuth();
@@ -45,13 +46,12 @@ export default function LoginPage() {
       >
         <Card className="bg-white rounded-2xl shadow-2xl overflow-hidden border-none p-8 md:p-10">
           <div className="flex flex-col items-center mb-8">
-            <div className="h-16 w-16 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-3xl mb-4 shadow-lg shadow-primary/30 transform -rotate-3">
-              AG
-            </div>
-            <h1 className="text-3xl font-display font-bold text-gray-900 tracking-tight">
-              Auto <span className="text-primary">Gamma</span>
-            </h1>
-            <p className="text-muted-foreground font-medium mt-2">Management CRM</p>
+            <img 
+              src={logoImage}
+              alt="Auto Gamma Logo"
+              className="h-16 w-auto mb-2"
+            />
+            <p className="text-muted-foreground font-medium">Management CRM</p>
           </div>
 
           <Form {...form}>

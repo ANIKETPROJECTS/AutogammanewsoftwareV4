@@ -306,7 +306,7 @@ export const inquirySchema = z.object({
   inquiryId: z.string().optional(),
   customerName: z.string().min(1),
   phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
-  email: z.string().optional(),
+  email: z.string().email("Please enter a valid email address").optional().or(z.literal("")),
   services: z.array(inquiryItemSchema).default([]),
   accessories: z.array(inquiryAccessorySchema).default([]),
   notes: z.string().optional(),

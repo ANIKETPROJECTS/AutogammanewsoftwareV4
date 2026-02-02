@@ -779,7 +779,12 @@ export default function AddJobPage() {
                         <FormControl>
                           <Input 
                             placeholder="2024" 
-                            {...field} 
+                            {...field}
+                            inputMode="numeric"
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '');
+                              field.onChange(value);
+                            }}
                             className={`h-11 ${form.formState.errors.year ? "border-red-500 ring-1 ring-red-500 bg-red-50" : ""}`} 
                           />
                         </FormControl>

@@ -494,7 +494,7 @@ Auto Gamma Car Care Studio`;
                         <FormItem>
                           <FormLabel className="text-xs text-muted-foreground">Email address (optional)</FormLabel>
                           <FormControl>
-                            <Input placeholder="Email address (optional)" {...field} className="h-10" />
+                            <Input type="email" placeholder="Email address (optional)" {...field} className="h-10" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
